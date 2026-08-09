@@ -1,7 +1,124 @@
 ﻿@page "/"
+@using LibraryTrackerApp.Data
+@using LibraryTrackerApp.Pages.Components
 
-<PageTitle>Home</PageTitle>
+<PageTitle>My Library</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container-fluid px-5 vh-100">
 
-Welcome to your new app.
+    <div class="mt-5 d-flex justify-content-between">
+        <div class="d-flex gap-3">
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary text-black dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    Status: <span>@currentStatusFilter</span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" @onclick='() => FilterBooks("All")'>All</a></li>
+                    <li><a class="dropdown-item" href="#" @onclick='() => FilterBooks("To Read")'>To Read</a></li>
+                    <li><a class="dropdown-item" href="#" @onclick='() => FilterBooks("Reading")'>Reading</a></li>
+                    <li><a class="dropdown-item" href="#" @onclick='() => FilterBooks("Finished")'>Finished</a></li>
+                </ul>
+            </div>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary text-black dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    Genre: <span>@currentGenreFilter</span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">All</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div>
+            <button class="btn btn-success">
+                <span class="d-flex gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
+                         class="bi bi-plus" viewBox="0 0 16 16">
+                        <path
+                        d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                    </svg>
+                    <span>Add Book</span>
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <div class="row mt-3 gap-3">
+        @if (books != null)
+        {
+            foreach (var book in books)
+            {
+                <BookCard Book="book" />
+            }
+        }
+    </div>
+
+</div>
+
+<style>
+    .dropdown-toggle:hover, .dropdown-toggle:active, .dropdown-toggle:focus {
+        color: white !important;
+    }
+    .dropdown-toggle:focus {
+        box-shadow: none;
+    }
+</style>
+
+@code {
+
+    private MockDb db = new();
+    private List<Book>? books { get; set; }
+
+    private string currentStatusFilter { get; set; } = "All";
+    private string currentGenreFilter { get; set; } = "All";
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        books = db.Books;
+    }
+
+
+    private void FilterBooks(string status)
+    {
+        currentStatusFilter = status;
+        var filteredBooks = new List<Book>();
+
+        if (status.Equals("All"))
+        {
+            books = db.Books;
+        }
+        else
+        {
+            foreach (var book in db.Books)
+            {
+                switch (status)
+                {
+                    case "To Read":
+                        if (book.Status == ReadingStatus.ToRead)
+                        {
+                            filteredBooks.Add(book);
+                        }
+                        break;
+
+                    case "Reading":
+                        if (book.Status == ReadingStatus.Reading)
+                        {
+                            filteredBooks.Add(book);
+                        }
+                        break;
+
+                    case "Finished":
+                        if (book.Status == ReadingStatus.Finished)
+                        {
+                            filteredBooks.Add(book);
+                        }
+                        break;
+                }
+            }
+            books = filteredBooks;
+        }
+    }
+}
