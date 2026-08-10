@@ -10,26 +10,14 @@
 
         @* Status and Genre filter buttons *@
         <div class="d-flex gap-3">
-            <div class="dropdown">
-                <button class="btn btn-outline-secondary text-black dropdown-toggle" type="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                    Status: <span>@currentStatusFilter</span>
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" @onclick='() => FilterBooks("All")'>All</a></li>
-                    <li><a class="dropdown-item" href="#" @onclick='() => FilterBooks("To Read")'>To Read</a></li>
-                    <li><a class="dropdown-item" href="#" @onclick='() => FilterBooks("Reading")'>Reading</a></li>
-                    <li><a class="dropdown-item" href="#" @onclick='() => FilterBooks("Finished")'>Finished</a></li>
-                </ul>
-            </div>
-            <div class="dropdown">
-                <button class="btn btn-outline-secondary text-black dropdown-toggle" type="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                    Genre: <span>@currentGenreFilter</span>
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">All</a></li>
-                </ul>
+            <div class="d-flex align-items-end justify-content-center gap-2">
+                <label class="form-label">Status:</label>
+                <select class="form-select" aria-label="Default select example">
+                    <option selected @onclick='() => FilterBooks("All")'>All</option>
+                    <option value="ToRead" @onclick='() => FilterBooks("To Read")'>To Read</option>
+                    <option value="Reading" @onclick='() => FilterBooks("Reading")'>Reading</option>
+                    <option value="Finished" @onclick='() => FilterBooks("Finished")'>Finished</option>
+                </select>
             </div>
         </div>
 
@@ -66,7 +54,7 @@
     </div>
 
     @* Book cards *@
-    <div class="row mt-3 gap-3">
+    <div class="row mt-4 gap-4 justify-content-center justify-content-lg-start">
         @if (books != null)
         {
             foreach (var book in books)

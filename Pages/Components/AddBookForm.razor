@@ -88,14 +88,14 @@
 @code {
 
     [Parameter]
-    public MockDb Db { get; set; }
+    public required MockDb Db { get; set; }
 
     [Parameter]
     public EventCallback OnBookAdded { get; set; }
 
     [SupplyParameterFromForm]
     private Book? Book { get; set; }
-    private string NewBookImageUrl { get; set; }
+    private string NewBookImageUrl { get; set; } = "";
 
     private bool isRatingDisabled = true;
 
@@ -110,13 +110,14 @@
         Book = new Book {
             Title = "",
             Author = "",
+            Rating = null
         };
         NewBookImageUrl = "";
     }
 
     private void OnStatusChange()
     {
-        if (Book.Status == ReadingStatus.Finished)
+        if (Book!.Status == ReadingStatus.Finished)
         {
             isRatingDisabled = false;
         }
@@ -129,7 +130,7 @@
 
     private async Task Submit()
     {
-        Book.ImageUrl = GetImageUrl();
+        Book!.ImageUrl = GetImageUrl();
         Db.Books.Add(Book);
         isLoading = true;
         await OnBookAdded.InvokeAsync();
