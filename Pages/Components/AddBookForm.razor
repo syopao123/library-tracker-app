@@ -1,0 +1,154 @@
+@using System.Diagnostics
+@using LibraryTrackerApp.Data
+
+
+<EditForm Model="Book" OnValidSubmit="Submit" FormName="AddBookForm">
+    <DataAnnotationsValidator />
+
+    <div class="row mb-3">
+        <div class="col">
+            <label for="newBookTitle" class="form-label">Title <span class="text-danger">*</span></label>
+            <InputText @bind-Value="Book.Title" class="form-control" id="newBookTitle"
+                       placeholder="e.g. The Wind-Up Bird Chronicle" />
+            <ValidationMessage For="@(() => Book.Title)" class="text-danger small mt-2" />
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col">
+            <label for="newBookAuthor" class="form-label">Author <span class="text-danger">*</span></label>
+            <InputText @bind-Value="Book.Author" class="form-control" id="newBookAuthor"
+                       placeholder="e.g. Haruki Murakami" />
+            <ValidationMessage For="@(() => Book.Author)" class="text-danger small mt-2" />
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col">
+            <label for="newBookImageUrl" class="form-label">Image Url</label>
+            <InputText @bind-Value="NewBookImageUrl" class="form-control" id="newBookImageUrl"
+                       placeholder="Enter book cover image url ..." />
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col">
+            <label for="newBookGenre" class="form-label">Genre</label>
+            <InputSelect class="form-select" @bind-Value="Book.Genre">
+                <option value="" selected>Select a genre ...</option>
+                <option value="Action">Action</option>
+                <option value="Drama">Drama</option>
+                <option value="Fantasy">Fantasy</option>
+            </InputSelect>
+        </div>
+        <div class="col">
+            <label for="newBookStatus" class="form-label">Status</label>
+            <InputSelect class="form-select" @bind-Value="Book.Status" @bind-Value:after="OnStatusChange">
+                <option value="@ReadingStatus.ToRead" selected>To Read</option>
+                <option value="@ReadingStatus.Reading">Reading</option>
+                <option value="@ReadingStatus.Finished">Finished</option>
+            </InputSelect>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col">
+            <label for="newBookRating" class="form-label">Rating</label>
+            <InputSelect class="form-select" @bind-Value="Book.Rating" disabled="@isRatingDisabled">
+                <option value="" selected>Select a rating ...</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </InputSelect>
+        </div>
+        <div class="col">
+            <label for="newBookDateAdded" class="form-label">Date Added</label>
+            <InputDate id="newBookDateAdded" @bind-Value="Book.DateAdded" class="form-control" />
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col">
+            <label for="newBookPersonalNotes" class="form-label">Personal Notes</label>
+            <InputTextArea id="newBookPersonalNotes" @bind-Value="Book.PersonalNotes" class="form-control" rows="5" />
+        </div>
+    </div>
+    <div class="row">
+        @if (isLoading)
+        {
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        }
+        <div class="col text-end">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" disabled="@isLoading">Close</button>
+            <button type="submit" class="btn btn-primary" disabled=@isLoading>Submit</button>
+        </div>
+    </div>
+
+</EditForm>
+
+@code {
+
+    [Parameter]
+    public MockDb Db { get; set; }
+
+    [Parameter]
+    public EventCallback OnBookAdded { get; set; }
+
+    [SupplyParameterFromForm]
+    private Book? Book { get; set; }
+    private string NewBookImageUrl { get; set; }
+
+    private bool isRatingDisabled = true;
+
+    private bool isLoading = false;
+
+    protected override void OnInitialized()
+    {
+        ResetBook();
+    }
+
+    private void ResetBook() {
+        Book = new Book {
+            Title = "",
+            Author = "",
+        };
+        NewBookImageUrl = "";
+    }
+
+    private void OnStatusChange()
+    {
+        if (Book.Status == ReadingStatus.Finished)
+        {
+            isRatingDisabled = false;
+        }
+        else
+        {
+            isRatingDisabled = true;
+            Book.Rating = null;
+        }
+    }
+
+    private async Task Submit()
+    {
+        Book.ImageUrl = GetImageUrl();
+        Db.Books.Add(Book);
+        isLoading = true;
+        await OnBookAdded.InvokeAsync();
+        isLoading = false;
+
+        ResetBook();
+    }
+
+    private string GetImageUrl() {
+
+        bool isUri = Uri.TryCreate(NewBookImageUrl, UriKind.Absolute, out Uri uriResult);
+
+        bool imageIsValidUrl = isUri && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+
+        if (imageIsValidUrl) {
+            return NewBookImageUrl;
+        } else {
+            return Book.ImageUrl;
+        }
+    }
+
+}

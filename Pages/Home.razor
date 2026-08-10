@@ -4,9 +4,11 @@
 
 <PageTitle>My Library</PageTitle>
 
-<div class="container-fluid px-5 vh-100">
+<div class="container-fluid px-5 mb-5">
 
     <div class="mt-5 d-flex justify-content-between">
+
+        @* Status and Genre filter buttons *@
         <div class="d-flex gap-3">
             <div class="dropdown">
                 <button class="btn btn-outline-secondary text-black dropdown-toggle" type="button"
@@ -31,8 +33,9 @@
             </div>
         </div>
 
+        @* Add Book button *@
         <div>
-            <button class="btn btn-success">
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addBookModal">
                 <span class="d-flex gap-1">
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
                          class="bi bi-plus" viewBox="0 0 16 16">
@@ -43,8 +46,26 @@
                 </span>
             </button>
         </div>
+
+        @* Modal *@
+        <div class="modal fade" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="addBookModalLabel">Add New Book</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="p-5">
+                            <AddBookForm Db=Db OnBookAdded="HandleBookAdd"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
+    @* Book cards *@
     <div class="row mt-3 gap-3">
         @if (books != null)
         {
@@ -68,7 +89,7 @@
 
 @code {
 
-    private MockDb db = new();
+    private MockDb Db = new();
     private List<Book>? books { get; set; }
 
     private string currentStatusFilter { get; set; } = "All";
@@ -77,9 +98,14 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        books = db.Books;
+        books = new List<Book>(Db.Books);
     }
 
+    public async Task HandleBookAdd() {
+        // Simulate mock async
+        await Task.Delay(1000);
+        books = new List<Book>(Db.Books);
+    }
 
     private void FilterBooks(string status)
     {
@@ -88,11 +114,11 @@
 
         if (status.Equals("All"))
         {
-            books = db.Books;
+            books = Db.Books;
         }
         else
         {
-            foreach (var book in db.Books)
+            foreach (var book in Db.Books)
             {
                 switch (status)
                 {

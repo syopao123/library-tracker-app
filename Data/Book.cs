@@ -4,10 +4,10 @@ namespace LibraryTrackerApp.Data
 {
     public class Book : IValidatableObject
     {
-        [Required]
+        [Required(ErrorMessage = "Book title is required")]
         public required string Title { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Book author is required")]
         public required string Author { get; set; }
 
         public string? Genre { get; set; }
@@ -20,6 +20,8 @@ namespace LibraryTrackerApp.Data
         public DateTime DateAdded { get; set; } = DateTime.Now;
 
         public string PersonalNotes { get; set; } = "";
+
+        public string ImageUrl { get; set; } = "images/book.jpg";
 
         // Checks if user has rated the book once finished reading
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

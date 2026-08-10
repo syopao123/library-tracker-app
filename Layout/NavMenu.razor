@@ -1,7 +1,10 @@
-﻿<nav class="navbar navbar-expand-lg bg-body-tertiary">
+﻿@using System.Diagnostics
+@inject NavigationManager NavManager
+
+<nav class="navbar navbar-expand-lg bg-body-tertiary border">
     <div class="container-fluid">
 
-        <a class="navbar-brand fw-bold text-success px-5 d-none d-lg-block" href="#">Personal Library Tracker</a>
+        <a class="navbar-brand fw-bold text-success d-none d-lg-block" href="#">Personal Library Tracker</a>
 
         <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -11,22 +14,12 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav d-flex justify-content-between">
                 <li class="nav-item px-2">
-                    <NavLink class="nav-link active" href="" Match="NavLinkMatch.All">
+                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                         My Library
                     </NavLink>
                 </li>
-                <li class="nav-item px-2">
-                    <NavLink class="nav-link" href="">
-                        <span>Stats</span>
-                    </NavLink>
-                </li>
-                <li class="nav-item px-2">
-                    <NavLink class="nav-link" href="">
-                        <span>Wishlist</span>
-                    </NavLink>
-                </li>
             </ul>
-            <ul class="navbar-nav ms-auto">
+            @* <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
                     <NavLink class="nav-link" href="">
                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor"
@@ -48,15 +41,27 @@
                         </svg>
                     </NavLink>
                 </li>
-            </ul>
+            </ul> *@
         </div>
 
     </div>
 </nav>
 
 <style>
+    .navbar-brand {
+        padding-left: 2rem;
+        padding-right: 5rem;
+    }
+
     .nav-link {
         color: black !important;
+    }
+
+    .nav-link.active {
+        text-decoration: none;
+        color: rgb(0, 112, 0) !important;
+        border-bottom: 3px solid #20b355;
+        padding-bottom: 4px;
     }
 </style>
 
