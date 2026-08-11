@@ -36,32 +36,35 @@
         </div>
     </div>
 
-    @* Modal *@
-    <div class="modal fade" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="addBookModalLabel">Add New Book</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <AddBookForm Db=Db OnBookAdded="HandleBookAdd" />
-                </div>
-            </div>
-        </div>
-    </div>
-
     @* Book cards *@
-    <div class="row mt-4 gap-4 justify-content-center justify-content-lg-start">
+    <div class="row mt-3 g-3 justify-content-center justify-content-lg-start">
         @if (books != null)
         {
             foreach (var book in books)
             {
-                <BookCard Book="book" />
+                <div class="col-auto">
+                    <BookCard Book="book" />
+                </div>
             }
         }
+
     </div>
 
+</div>
+
+@* Modal *@
+<div class="modal fade" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="addBookModalLabel">Add New Book</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <AddBookForm Db=Db OnBookAdded="HandleBookAdd" />
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
