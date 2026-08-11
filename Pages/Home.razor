@@ -4,50 +4,48 @@
 
 <PageTitle>My Library</PageTitle>
 
-<div class="container-fluid px-5 mb-5">
+<div class="container-fluid p-5">
 
-    <div class="mt-5 d-flex justify-content-between">
-
+    <div class="row justify-content-between">
         @* Status and Genre filter buttons *@
-        <div class="d-flex gap-3">
-            <div class="d-flex align-items-end justify-content-center gap-2">
-                <label class="form-label">Status:</label>
-                <select class="form-select" aria-label="Default select example">
-                    <option selected @onclick='() => FilterBooks("All")'>All</option>
-                    <option value="ToRead" @onclick='() => FilterBooks("To Read")'>To Read</option>
-                    <option value="Reading" @onclick='() => FilterBooks("Reading")'>Reading</option>
-                    <option value="Finished" @onclick='() => FilterBooks("Finished")'>Finished</option>
+        <div class="col-auto">
+            <div class="d-flex flex-row align-items-end gap-3">
+                <label class="form-label d-none d-sm-block">Status:</label>
+                <select class="form-select" aria-label="Default select example" @onchange="FilterBooks">
+                    <option value="All" selected>All</option>
+                    <option value="ToRead">To Read</option>
+                    <option value="Reading">Reading</option>
+                    <option value="Finished">Finished</option>
                 </select>
             </div>
         </div>
 
         @* Add Book button *@
-        <div>
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addBookModal">
+        <div class="col-auto">
+            <button type="button" class="btn btn-success addBookBtn" data-bs-toggle="modal"
+                    data-bs-target="#addBookModal">
                 <span class="d-flex gap-1">
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
                          class="bi bi-plus" viewBox="0 0 16 16">
                         <path
                         d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
                     </svg>
-                    <span>Add Book</span>
+                    <span class="d-none d-sm-block">Add Book</span>
                 </span>
             </button>
         </div>
+    </div>
 
-        @* Modal *@
-        <div class="modal fade" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="addBookModalLabel">Add New Book</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="p-5">
-                            <AddBookForm Db=Db OnBookAdded="HandleBookAdd"/>
-                        </div>
-                    </div>
+    @* Modal *@
+    <div class="modal fade" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addBookModalLabel">Add New Book</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <AddBookForm Db=Db OnBookAdded="HandleBookAdd" />
                 </div>
             </div>
         </div>
@@ -73,6 +71,17 @@
     .dropdown-toggle:focus {
         box-shadow: none;
     }
+    .addBookBtn {
+        border-radius: 9px;
+        background-color: #006a61;
+    }
+    .addBookBtn:hover {
+        background-color: rgb(0, 117, 108);
+    }
+    .addBookBtn:focus:not(:focus-visible) {
+        box-shadow: none;
+        outline: none;
+    }
 </style>
 
 @code {
@@ -95,44 +104,12 @@
         books = new List<Book>(Db.Books);
     }
 
-    private void FilterBooks(string status)
+    private void FilterBooks(ChangeEventArgs e)
     {
-        currentStatusFilter = status;
-        var filteredBooks = new List<Book>();
+        currentStatusFilter = 
+            e.Value?.ToString() is null || e.Value!.ToString().IsWhiteSpace() || e.Value.ToString()!.Length == 0 ? "All" : e.Value!.ToString()!;
 
-        if (status.Equals("All"))
-        {
-            books = Db.Books;
-        }
-        else
-        {
-            foreach (var book in Db.Books)
-            {
-                switch (status)
-                {
-                    case "To Read":
-                        if (book.Status == ReadingStatus.ToRead)
-                        {
-                            filteredBooks.Add(book);
-                        }
-                        break;
-
-                    case "Reading":
-                        if (book.Status == ReadingStatus.Reading)
-                        {
-                            filteredBooks.Add(book);
-                        }
-                        break;
-
-                    case "Finished":
-                        if (book.Status == ReadingStatus.Finished)
-                        {
-                            filteredBooks.Add(book);
-                        }
-                        break;
-                }
-            }
-            books = filteredBooks;
-        }
+        books = currentStatusFilter.Equals("All") ? Db.Books : 
+                                        Db.Books.Where((b) => b.Status.ToString().Equals(currentStatusFilter)).ToList();
     }
 }

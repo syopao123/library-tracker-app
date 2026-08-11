@@ -10,15 +10,15 @@
             @switch (Book.Status)
             {
                 case ReadingStatus.ToRead:
-                    <div><span class="badge rounded-pill px-3 py-2 text-bg-secondary">To Read</span></div>
+                    <div><span class="badge rounded-pill px-3 py-2 to-read">To Read</span></div>
                     break;
 
                 case ReadingStatus.Reading:
-                    <div><span class="badge rounded-pill px-3 py-2 text-bg-warning">Reading</span></div>
+                    <div><span class="badge rounded-pill px-3 py-2 reading">Reading</span></div>
                     break;
 
                 case ReadingStatus.Finished:
-                    <div><span class="badge rounded-pill px-3 py-2 text-bg-success">Finished</span></div>
+                    <div><span class="badge rounded-pill px-3 py-2 finished">Finished</span></div>
                     break;
             }
 
@@ -28,7 +28,7 @@
             <h5>@Book.Title</h5>
         </div>
 
-        <p class="card-text">@Book.PersonalNotes</p>
+        <p class="card-text">@Book.Genre</p>
 
     </div>
     <div class="card-footer pb-4">
@@ -82,17 +82,17 @@
     .card-footer {
         background: transparent;
     }
-    .card-body .text-bg-secondary {
-        color: rgb(73, 73, 73) !important;
-        background-color: rgb(233, 233, 233) !important;
-    }
-    .card-body .text-bg-warning {
+    .card-body .to-read {
         color: rgb(95, 62, 0) !important;
         background-color: rgb(241, 220, 179) !important;
     }
-    .card-body .text-bg-success {
+    .card-body .reading {
         color: rgb(16, 80, 58) !important;
         background-color: rgb(179, 241, 209) !important;
+    }
+    .card-body .finished {
+        color: rgb(73, 73, 73) !important;
+        background-color: rgb(233, 233, 233) !important;
     }
 </style>
 
