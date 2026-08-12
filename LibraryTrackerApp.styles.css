@@ -1,15 +1,3 @@
-/* /Pages/Components/AddBookForm.razor.rz.scp.css */
-    .cancelBtn[b-mq23r2vcfo], .cancelBtn:hover[b-mq23r2vcfo] {
-        background-color: white;
-        color: #006a61;
-        border: 1px solid #006a61;
-        border-radius: 10px;
-    }
-    .saveBookBtn[b-mq23r2vcfo], .saveBookBtn:hover[b-mq23r2vcfo] {
-        background-color: #006a61;
-        color: white;
-        border-radius: 10px;
-    }
 /* /Pages/Components/BookCard.razor.rz.scp.css */
     .card[b-cap1tn41fz] {
         border-radius: 10px;
