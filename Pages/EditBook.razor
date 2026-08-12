@@ -78,12 +78,15 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-6 col-md-6 col-lg-3">
-                        <button type="button" class="btn btn-danger" @onclick="DeleteBook">
-                            Delete
-                        </button>
-                    </div>
-                    <div class="col-6 col-md-6 col-lg-3 d-flex gap-2 justify-content-end">
+                    @if (isEditingBook)
+                    {
+                        <div class="col-6 col-md-6 col-lg-3">
+                            <button type="button" class="btn btn-danger" @onclick="DeleteBook">
+                                Delete
+                            </button>
+                        </div>
+                    }
+                    <div class="col-6 col-md-6 col-lg-@(isEditingBook ? 3 : 6) d-flex gap-2 justify-content-end">
                         <button type="button" class="btn px-4 cancelBtn" @onclick="RedirectToHome">
                             Cancel
                         </button>
@@ -102,7 +105,7 @@
                 </div>
 
                 @if (message is not null) {
-                    <div class="row">
+                    <div class="row text-center text-danger">
                         <div class="col">
                             <span>@message</span>
                         </div>
@@ -128,23 +131,36 @@
 
     private bool isRatingDisabled = true;
 
-    private bool isLoading = false;
+    private bool isLoading = false, isEditingBook = true;
 
     protected override void OnInitialized()
     {
         // Find book
         var result = Db.Books.Find((b) => b.Id.Equals(Id));
 
-        if (result is null) {
-            NavigationManager.NavigateTo("/");
-            return;
+        if (result is not null)
+        {
+            Book = result;
+            isRatingDisabled = Book.Status == ReadingStatus.Finished ? false : true;
         }
-        Book = result;
-        isRatingDisabled = Book.Status == ReadingStatus.Finished ? false : true;
+        else
+        {
+            isEditingBook = false;
+            ResetBook();
+        }
     }
 
     private void RedirectToHome() {
-        NavigationManager.NavigateTo("/");
+        NavigationManager.NavigateTo(NavigationManager.BaseUri);
+    }
+
+    private void ResetBook() {
+        Book = new Book {
+            Title = "",
+            Author = "",
+            Rating = null
+        };
+        NewBookImageUrl = "";
     }
 
     private async Task Submit()
@@ -153,7 +169,15 @@
 
         // Update book info
         var book = Db.Books.Find((b) => b.Id.Equals(Id));
-        book = Book;
+
+        // If book exists, update it
+        if (book is not null) {
+            book = Book;
+
+        // If not, add it to the database
+        } else {
+            Db.Books.Add(Book);
+        }
         
         RedirectToHome();
     }
@@ -165,11 +189,11 @@
             var result = Db.Books.Remove(Book);
             if (result)
             {
-                NavigationManager.NavigateTo("/");
+                NavigationManager.NavigateTo(NavigationManager.BaseUri);
             }
             else
             {
-                message = "Something went wrong.";
+                message = "Failed to delete book.";
             }
         }
     }
