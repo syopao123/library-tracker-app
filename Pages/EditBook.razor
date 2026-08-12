@@ -136,11 +136,19 @@
     protected override void OnInitialized()
     {
         // Find book
-        var result = Db.Books.Find((b) => b.Id.Equals(Id));
+        var originalBook = Db.Books.Find((b) => b.Id.Equals(Id));
 
-        if (result is not null)
+        if (originalBook is not null)
         {
-            Book = result;
+            Book = new Book {
+                Title = originalBook.Title,
+                Author = originalBook.Author,
+                ImageUrl = originalBook.ImageUrl,
+                Genre = originalBook.Genre,
+                Status = originalBook.Status,
+                Rating = originalBook.Rating,
+                PersonalNotes = originalBook.PersonalNotes
+            };
             isRatingDisabled = Book.Status == ReadingStatus.Finished ? false : true;
         }
         else
@@ -168,11 +176,17 @@
         Book!.ImageUrl = GetImageUrl();
 
         // Update book info
-        var book = Db.Books.Find((b) => b.Id.Equals(Id));
+        var originalBook = Db.Books.Find(b => b.Id.Equals(Id));
 
         // If book exists, update it
-        if (book is not null) {
-            book = Book;
+        if (originalBook is not null && isEditingBook) {
+            originalBook.Title = Book.Title;
+            originalBook.Author = Book.Author;
+            originalBook.ImageUrl = Book.ImageUrl;
+            originalBook.Genre = Book.Genre;
+            originalBook.Status = Book.Status;
+            originalBook.Rating = Book.Rating;
+            originalBook.PersonalNotes = Book.PersonalNotes;
 
         // If not, add it to the database
         } else {
@@ -184,17 +198,16 @@
 
     private async Task DeleteBook()
     {
-        if (Book is not null)
+        // Find original book
+        var originalBook = Db.Books.Find(b => b.Id.Equals(Id));
+        if (originalBook is not null)
         {
-            var result = Db.Books.Remove(Book);
-            if (result)
-            {
-                NavigationManager.NavigateTo(NavigationManager.BaseUri);
-            }
-            else
-            {
-                message = "Failed to delete book.";
-            }
+            var result = Db.Books.Remove(originalBook);
+            NavigationManager.NavigateTo(NavigationManager.BaseUri);
+        }
+        else
+        {
+            message = "Failed to delete book.";
         }
     }
 
