@@ -1,0 +1,90 @@
+/* /Pages/Components/AddBookForm.razor.rz.scp.css */
+    .cancelBtn[b-mq23r2vcfo], .cancelBtn:hover[b-mq23r2vcfo] {
+        background-color: white;
+        color: #006a61;
+        border: 1px solid #006a61;
+        border-radius: 10px;
+    }
+    .saveBookBtn[b-mq23r2vcfo], .saveBookBtn:hover[b-mq23r2vcfo] {
+        background-color: #006a61;
+        color: white;
+        border-radius: 10px;
+    }
+/* /Pages/Components/BookCard.razor.rz.scp.css */
+    .card[b-cap1tn41fz] {
+        border-radius: 10px;
+        border: 1px solid rgb(240, 240, 240) !important;
+        width: 20rem;
+        height: 100%;
+    }
+    .card-img-top[b-cap1tn41fz] {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+    }
+    .card[b-cap1tn41fz], .card-img-top[b-cap1tn41fz] {
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+    }
+    .card-text[b-cap1tn41fz] {
+        color: rgb(110, 110, 110);
+        font-size: 14px;
+    }
+    .card[b-cap1tn41fz], .card-footer[b-cap1tn41fz] {
+        border: none;
+    }
+    .card-footer[b-cap1tn41fz] {
+        background: transparent;
+    }
+    .card-body .to-read[b-cap1tn41fz] {
+        color: rgb(95, 62, 0) !important;
+        background-color: rgb(241, 220, 179) !important;
+    }
+    .card-body .reading[b-cap1tn41fz] {
+        color: rgb(16, 80, 58) !important;
+        background-color: rgb(179, 241, 209) !important;
+    }
+    .card-body .finished[b-cap1tn41fz] {
+        color: rgb(73, 73, 73) !important;
+        background-color: rgb(233, 233, 233) !important;
+    }
+/* /Pages/EditBook.razor.rz.scp.css */
+    .cancelBtn[b-hb3zk9p97r], .cancelBtn:hover[b-hb3zk9p97r] {
+        background-color: white;
+        color: #006a61;
+        border: 1px solid #006a61;
+        border-radius: 10px;
+    }
+    .saveBookBtn[b-hb3zk9p97r], .saveBookBtn:hover[b-hb3zk9p97r] {
+        background-color: #006a61;
+        color: white;
+        border-radius: 10px;
+    }
+
+    .EditBookForm .row[b-hb3zk9p97r] {
+        justify-content: center;
+    }
+/* /Pages/Home.razor.rz.scp.css */
+    .dropdown-toggle:hover[b-enhofoxdku],
+    .dropdown-toggle:active[b-enhofoxdku],
+    .dropdown-toggle:focus[b-enhofoxdku] {
+        color: white !important;
+    }
+
+    .dropdown-toggle:focus[b-enhofoxdku] {
+        box-shadow: none;
+    }
+
+    .addBookBtn[b-enhofoxdku] {
+        border-radius: 9px;
+        background-color: #006a61;
+    }
+
+    .addBookBtn:hover[b-enhofoxdku] {
+        background-color: rgb(0, 117, 108);
+    }
+
+    .addBookBtn:focus:not(:focus-visible)[b-enhofoxdku] {
+        box-shadow: none;
+        outline: none;
+    }
