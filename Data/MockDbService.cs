@@ -1,6 +1,6 @@
 namespace LibraryTrackerApp.Data
 {
-    public class MockDb
+    public class MockDbService
     {
 
         public List<Book> Books { get; set; } = new()
@@ -37,6 +37,12 @@ namespace LibraryTrackerApp.Data
             ImageUrl = "https://upload.wikimedia.org/wikipedia/en/5/56/TheNameoftheWind_cover.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original"
         }
         };
-        
+
+        public List<string> Genres { get; set; } = new()
+        {
+            "Fiction", "Non-Fiction", "Sci-Fi", "Fantasy", "Mystery",
+            "Thriller", "Romance", "Historical Fiction", "Biography", "Self-Help"
+        };
+
     }
 }

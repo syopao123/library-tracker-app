@@ -1,0 +1,23 @@
+    .dropdown-toggle:hover,
+    .dropdown-toggle:active,
+    .dropdown-toggle:focus {
+        color: white !important;
+    }
+
+    .dropdown-toggle:focus {
+        box-shadow: none;
+    }
+
+    .addBookBtn {
+        border-radius: 9px;
+        background-color: #006a61;
+    }
+
+    .addBookBtn:hover {
+        background-color: rgb(0, 117, 108);
+    }
+
+    .addBookBtn:focus:not(:focus-visible) {
+        box-shadow: none;
+        outline: none;
+    }

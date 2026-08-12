@@ -1,6 +1,7 @@
 @using System.Diagnostics
 @using LibraryTrackerApp.Data
 
+@inject MockDbService Db
 
 <EditForm Model="Book" OnValidSubmit="Submit" FormName="AddBookForm" class="p-0 p-lg-5">
     <DataAnnotationsValidator />
@@ -33,7 +34,7 @@
             <label for="newBookGenre" class="form-label">Genre</label>
             <InputSelect class="form-select" @bind-Value="Book.Genre">
                 <option value="" selected>Select a genre ...</option>
-                @foreach (var genre in BookGenres!) {
+                @foreach (var genre in Db.Genres!) {
                     <option value="@genre">@genre</option>
                 }
             </InputSelect>
@@ -59,10 +60,6 @@
                 <option value="5">5</option>
             </InputSelect>
         </div>
-        @* <div class="col">
-            <label for="newBookDateAdded" class="form-label">Date Added</label>
-            <InputDate id="newBookDateAdded" @bind-Value="Book.DateAdded" class="form-control" />
-        </div> *@
     </div>
     <div class="row mb-3">
         <div class="col">
@@ -95,32 +92,13 @@
 
 </EditForm>
 
-<style>
-    .cancelBtn, .cancelBtn:hover {
-        background-color: white;
-        color: #006a61;
-        border: 1px solid #006a61;
-        border-radius: 10px;
-    }
-    .saveBookBtn, .saveBookBtn:hover {
-        background-color: #006a61;
-        color: white;
-        border-radius: 10px;
-    }
-</style>
-
 @code {
-
-    [Parameter]
-    public required MockDb Db { get; set; }
 
     [Parameter]
     public EventCallback OnBookAdded { get; set; }
 
     [SupplyParameterFromForm]
     private Book? Book { get; set; }
-
-    private List<string>? BookGenres { get; set; }
 
     private string NewBookImageUrl { get; set; } = "";
 
@@ -130,10 +108,6 @@
 
     protected override void OnInitialized()
     {
-        BookGenres = new() { 
-            "Fiction", "Non-Fiction", "Sci-Fi", "Fantasy", "Mystery", 
-            "Thriller", "Romance", "Historical Fiction", "Biography", "Self-Help"
-        };
         ResetBook();
     }
 
@@ -166,7 +140,6 @@
         isLoading = true;
         await OnBookAdded.InvokeAsync();
         isLoading = false;
-
         ResetBook();
     }
 

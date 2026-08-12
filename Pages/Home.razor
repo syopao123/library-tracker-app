@@ -2,11 +2,13 @@
 @using LibraryTrackerApp.Data
 @using LibraryTrackerApp.Pages.Components
 
+@inject MockDbService Db
+
 <PageTitle>My Library</PageTitle>
 
-<div class="container-fluid p-5">
-
-    <div class="row justify-content-between">
+@* Content *@
+<div class="p-3 p-lg-5">
+    <div class="row justify-content-between mt-4 mt-md-0">
         @* Status and Genre filter buttons *@
         <div class="col-auto">
             <div class="d-flex flex-row align-items-end gap-3">
@@ -19,7 +21,6 @@
                 </select>
             </div>
         </div>
-
         @* Add Book button *@
         <div class="col-auto">
             <button type="button" class="btn btn-success addBookBtn" data-bs-toggle="modal"
@@ -37,7 +38,7 @@
     </div>
 
     @* Book cards *@
-    <div class="row mt-3 g-3 justify-content-center justify-content-lg-start">
+    <div class="row mt-3 mb-3 g-3 justify-content-center justify-content-lg-start">
         @if (books != null)
         {
             foreach (var book in books)
@@ -47,9 +48,7 @@
                 </div>
             }
         }
-
     </div>
-
 </div>
 
 @* Modal *@
@@ -61,35 +60,14 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <AddBookForm Db=Db OnBookAdded="HandleBookAdd" />
+                <AddBookForm OnBookAdded="HandleBookAdd" />
             </div>
         </div>
     </div>
 </div>
 
-<style>
-    .dropdown-toggle:hover, .dropdown-toggle:active, .dropdown-toggle:focus {
-        color: white !important;
-    }
-    .dropdown-toggle:focus {
-        box-shadow: none;
-    }
-    .addBookBtn {
-        border-radius: 9px;
-        background-color: #006a61;
-    }
-    .addBookBtn:hover {
-        background-color: rgb(0, 117, 108);
-    }
-    .addBookBtn:focus:not(:focus-visible) {
-        box-shadow: none;
-        outline: none;
-    }
-</style>
-
 @code {
 
-    private MockDb Db = new();
     private List<Book>? books { get; set; }
 
     private string currentStatusFilter { get; set; } = "All";
@@ -101,7 +79,8 @@
         books = new List<Book>(Db.Books);
     }
 
-    public async Task HandleBookAdd() {
+    private async Task HandleBookAdd()
+    {
         // Simulate mock async
         await Task.Delay(1000);
         books = new List<Book>(Db.Books);
@@ -109,10 +88,9 @@
 
     private void FilterBooks(ChangeEventArgs e)
     {
-        currentStatusFilter = 
-            e.Value?.ToString() is null || e.Value!.ToString().IsWhiteSpace() || e.Value.ToString()!.Length == 0 ? "All" : e.Value!.ToString()!;
+        var value = e.Value?.ToString();
 
-        books = currentStatusFilter.Equals("All") ? Db.Books : 
-                                        Db.Books.Where((b) => b.Status.ToString().Equals(currentStatusFilter)).ToList();
+        currentStatusFilter = string.IsNullOrWhiteSpace(value) ? "All" : e.Value!.ToString()!;
+        books = currentStatusFilter.Equals("All") ? Db.Books : Db.Books.Where((b) => b.Status.ToString().Equals(currentStatusFilter)).ToList();
     }
 }

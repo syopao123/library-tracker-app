@@ -4,6 +4,8 @@ namespace LibraryTrackerApp.Data
 {
     public class Book : IValidatableObject
     {
+        public Guid Id { get; } = Guid.NewGuid();
+
         [Required(ErrorMessage = "Book title is required")]
         public required string Title { get; set; }
 

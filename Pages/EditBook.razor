@@ -1,0 +1,204 @@
+@page "/edit-book/{Id:guid}"
+@using LibraryTrackerApp.Data
+@inject MockDbService Db;
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit Book</PageTitle>
+
+<div class="p-5">
+
+    <div class="row EditBookForm">
+        @if (Book is not null)
+        {
+            <EditForm Model="Book" OnValidSubmit="Submit" FormName="EditBookForm" class="p-0 p-lg-5">
+                <DataAnnotationsValidator />
+
+                <div class="row mb-3">
+                    <div class="col-12 col-lg-4">
+                        <label for="newBookTitle" class="form-label">Title <span class="text-danger">*</span></label>
+                        <InputText @bind-Value="Book.Title" class="form-control" id="newBookTitle"
+                                   placeholder="e.g. The Wind-Up Bird Chronicle" />
+                        <ValidationMessage For="@(() => Book.Title)" class="text-danger small mt-2" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12 col-lg-4">
+                        <label for="newBookAuthor" class="form-label">Author <span class="text-danger">*</span></label>
+                        <InputText @bind-Value="Book.Author" class="form-control" id="newBookAuthor"
+                                   placeholder="e.g. Haruki Murakami" />
+                        <ValidationMessage For="@(() => Book.Author)" class="text-danger small mt-2" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12 col-lg-4">
+                        <label for="newBookImageUrl" class="form-label">Image Url</label>
+                        <InputText @bind-Value="NewBookImageUrl" class="form-control" id="newBookImageUrl"
+                                   placeholder="Enter book cover image url ..." />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6 col-lg-2">
+                        <label for="newBookGenre" class="form-label">Genre</label>
+                        <InputSelect class="form-select" @bind-Value="Book.Genre">
+                            <option value="" selected>Select a genre ...</option>
+                            @foreach (var genre in Db.Genres!)
+                            {
+                                <option value="@genre">@genre</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    <div class="col-6 col-lg-2">
+                        <label for="newBookStatus" class="form-label">Status</label>
+                        <InputSelect class="form-select" @bind-Value="Book.Status" @bind-Value:after="OnStatusChange">
+                            <option value="@ReadingStatus.ToRead" selected>To Read</option>
+                            <option value="@ReadingStatus.Reading">Reading</option>
+                            <option value="@ReadingStatus.Finished">Finished</option>
+                        </InputSelect>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6 col-lg-4">
+                        <label for="newBookRating" class="form-label">Rating</label>
+                        <InputSelect class="form-select" @bind-Value="Book.Rating" disabled="@isRatingDisabled">
+                            <option value="" selected>Select a rating ...</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => Book.Rating)" class="text-danger small mt-2" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6 col-lg-4">
+                        <label for="newBookPersonalNotes" class="form-label">Personal Notes</label>
+                        <InputTextArea id="newBookPersonalNotes" @bind-Value="Book.PersonalNotes" class="form-control"
+                                       rows="5" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6 col-lg-2">
+                        <button type="button" class="btn btn-danger" @onclick="DeleteBook">
+                            Delete
+                        </button>
+                    </div>
+                    <div class="col-6 col-lg-2 d-flex gap-2 justify-content-end">
+                        <button type="button" class="btn px-4 cancelBtn" @onclick="RedirectToHome">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn px-3 saveBookBtn">
+                            <div class="d-flex align-items-center gap-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                     class="bi bi-floppy" viewBox="0 0 16 16">
+                                    <path d="M11 2H9v3h2z" />
+                                    <path
+                                    d="M1.5 0h11.586a1.5 1.5 0 0 1 1.06.44l1.415 1.414A1.5 1.5 0 0 1 16 2.914V14.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5v-13A1.5 1.5 0 0 1 1.5 0M1 1.5v13a.5.5 0 0 0 .5.5H2v-4.5A1.5 1.5 0 0 1 3.5 9h9a1.5 1.5 0 0 1 1.5 1.5V15h.5a.5.5 0 0 0 .5-.5V2.914a.5.5 0 0 0-.146-.353l-1.415-1.415A.5.5 0 0 0 13.086 1H13v4.5A1.5 1.5 0 0 1 11.5 7h-7A1.5 1.5 0 0 1 3 5.5V1H1.5a.5.5 0 0 0-.5.5m3 4a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V1H4zM3 15h10v-4.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5z" />
+                                </svg>
+                                <span>Save Book</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                @if (message is not null) {
+                    <div class="row">
+                        <div class="col">
+                            <span>@message</span>
+                        </div>
+                    </div>
+                }
+
+            </EditForm>
+        }
+    </div>
+
+</div>
+
+@code {
+
+    [Parameter]
+    public Guid Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private Book? Book { get; set; }
+
+    private string? NewBookImageUrl { get; set; }
+    private string? message { get; set; }
+
+    private bool isRatingDisabled = true;
+
+    private bool isLoading = false;
+
+    protected override void OnInitialized()
+    {
+        // Find book
+        var result = Db.Books.Find((b) => b.Id.Equals(Id));
+
+        if (result is null) {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+        Book = result;
+    }
+
+    private void RedirectToHome() {
+        NavigationManager.NavigateTo("/");
+    }
+
+    private async Task Submit()
+    {
+        Book!.ImageUrl = GetImageUrl();
+
+        // Update book info
+        var book = Db.Books.Find((b) => b.Id.Equals(Id));
+        book = Book;
+        
+        RedirectToHome();
+    }
+
+    private async Task DeleteBook()
+    {
+        if (Book is not null)
+        {
+            var result = Db.Books.Remove(Book);
+            if (result)
+            {
+                NavigationManager.NavigateTo("/");
+            }
+            else
+            {
+                message = "Something went wrong.";
+            }
+        }
+    }
+
+    private string GetImageUrl() {
+
+        bool isUri = Uri.TryCreate(NewBookImageUrl, UriKind.Absolute, out Uri uriResult);
+
+        bool imageIsValidUrl = isUri && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+
+        if (imageIsValidUrl) {
+            return NewBookImageUrl;
+        } else {
+            return Book.ImageUrl;
+        }
+    }
+
+    private void OnStatusChange()
+    {
+        if (Book!.Status == ReadingStatus.Finished)
+        {
+            isRatingDisabled = false;
+        }
+        else
+        {
+            isRatingDisabled = true;
+            Book.Rating = null;
+        }
+    }
+
+
+
+}
