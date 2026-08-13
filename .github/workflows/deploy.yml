@@ -12,7 +12,7 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - run: dotnet publish -c Release -o release
+      - run: dotnet publish LibraryTrackerApp/LibraryTrackerApp.csproj -c Release -o release
       - run: sed -i 's|<base href="/" />|<base href="/library-tracker-app/" />|g' release/wwwroot/index.html
       - run: cp release/wwwroot/index.html release/wwwroot/404.html
       - run: touch release/wwwroot/.nojekyll
