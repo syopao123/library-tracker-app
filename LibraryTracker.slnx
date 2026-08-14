@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="LibraryShared/LibraryShared.csproj" />
   <Project Path="LibraryTrackerApi/LibraryTrackerApi.csproj" />
   <Project Path="LibraryTrackerApp/LibraryTrackerApp.csproj" />
 </Solution>
