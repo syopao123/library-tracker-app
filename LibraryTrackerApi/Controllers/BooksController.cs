@@ -3,6 +3,7 @@ using LibraryShared.dtos;
 using LibraryTrackerApi.Data;
 using LibraryTrackerApi.Models;
 using LibraryTrackerApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,7 @@ namespace LibraryTrackerApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class BooksController : ControllerBase
     {
         private AppDbContext _db;
@@ -21,8 +23,19 @@ namespace LibraryTrackerApi.Controllers
             _openLibrary = openLibrary;
         }
 
+        [HttpPost("search")]
+        public async Task<ActionResult<OpenLibrarySearchResponse>> SearchBookAsync(BookSearchDto dto)
+        {
+            var books = await _openLibrary.SearchBookAsync(dto);
 
-        [HttpGet]
+            if (books is null)
+                return NotFound();
+
+            return Ok(books);
+        }
+
+
+        [HttpGet("books")]
         public async Task<ActionResult> GetBooks()
         {
             return Ok(await _db.Books.ToListAsync());
@@ -39,19 +52,6 @@ namespace LibraryTrackerApi.Controllers
 
             return Ok(book);
         }
-
-
-        [HttpPost("search")]
-        public async Task<ActionResult<OpenLibrarySearchResponse>> SearchBook(BookSearchDto dto)
-        {
-            var books = await _openLibrary.SearchBookAsync(dto.Title.ToLower(), dto.Author.ToLower())!;
-
-            if (books is null)
-                return NotFound();
-
-            return Ok(books);
-        }
-
 
         [HttpPost]
         public async Task<ActionResult<Book>> AddBook(BookDto dto)

@@ -13,3 +13,8 @@
     .EditBookForm .row {
         justify-content: center;
     }
+
+    #searchResultsWindow {
+        background-color: rgb(231, 231, 231);
+        border: 1px solid rgb(206, 206, 206);
+    }

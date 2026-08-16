@@ -1,14 +1,146 @@
 @page "/edit-book"
+@using LibraryShared.classes
 @using LibraryShared.dtos
 @using LibraryShared.enums
+@using LibraryTrackerApp.Pages.Components
+@using LibraryTrackerApp.Services
 
-@inject NavigationManager NavigationManager
+@inject NavigationManager _navManager
+@inject BookService _bookService
 
 <PageTitle>Edit Book</PageTitle>
 
 <div class="p-5">
 
-    <div class="row EditBookForm">
+    <div class="row justify-content-center EditBookForm">
+
+        @if (isAddingBook)
+        {
+            <div class="card p-5 border-0 rounded-4 shadow-sm" style="width: 60rem;">
+                <div class="card-title">
+                    <div class="d-flex align-items-center gap-3">
+                        <NavLink href="/" class="text-black">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                 class="bi bi-arrow-left" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd"
+                                      d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8" />
+                            </svg>
+                        </NavLink>
+                        <span class="fs-5">
+                            Add Book
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body p-0 mt-4">
+
+                    @if (BookSearchDto is not null)
+                    {
+                        <EditForm Model="BookSearchDto" OnValidSubmit="SubmitBookSearchAsync" FormName="BookSearchForm">
+                            <DataAnnotationsValidator />
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label for="title" class="form-label">Title</label>
+                                    <InputText type="text" class="form-control" @bind-Value="BookSearchDto.Title"
+                                               placeholder="e.g. The Wind-Up Bird Chronicle" />
+                                    <ValidationMessage For="() => BookSearchDto.Title" class="mt-2 text-danger small" />
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label for="author" class="form-label">Author</label>
+                                    <InputText type="text" class="form-control" @bind-Value="BookSearchDto.Author"
+                                               placeholder="e.g. Haruki Murakami" />
+                                    <ValidationMessage For="() => BookSearchDto.Author" class="mt-2 text-danger small" />
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label for="publishYear" class="form-label">Year Published</label>
+                                    <InputNumber @bind-value="BookSearchDto.PublishYear" class="form-control"
+                                                 max="@(DateTime.Now.Year)" />
+                                    <ValidationMessage For="() => BookSearchDto.PublishYear" class="mt-2 text-danger small" />
+                                </div>
+                            </div>
+                            <div class="row mt-5 justify-content-between">
+                                <div class="col-auto">
+                                    @if (isSearching)
+                                    {
+                                        <div class="spinner-border text-success" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-auto">
+                                    <button class="btn btn-success" disabled="@isSearching">Search Book</button>
+                                </div>
+                            </div>
+                        </EditForm>
+                    }
+
+                    @* Search Results *@
+                    @if (SearchResults is not null)
+                    {
+                        <div class="row mt-5 pb-5 rounded-4 px-4 gap-4" id="searchResultsWindow">
+                            <div class="col pt-4 ps-0">
+                                <span class="text-dark fst-italic">We found @(SearchResults.Docs.Count() > 1 ? "multiple books" : "a book") matching with your search.
+                                    Please confirm the book you're adding.</span>
+                                </div>
+                                @foreach (var doc in SearchResults.Docs)
+                                {
+                                    <div class="col-12 p-5 border bg-white shadow-sm rounded-4">
+                                        <div class="row">
+                                            <div class="col-auto p-0">
+                                                @if (doc.CoverI is not null)
+                                                {
+                                                    <img src="https://covers.openlibrary.org/b/id/@(doc.CoverI)-S.jpg" alt="@doc.Title"
+                                                         style="width: 5rem;" />
+                                                }
+                                                else
+                                                {
+                                                    <img src="..." alt="No Image" style="width: 5rem;" />
+                                                }
+                                            </div>
+                                            <div class="col ps-5 my-auto">
+                                                <div class="row justify-content-start">
+                                                    <div class="col-auto p-0">
+                                                        <span class="fw-bold fs-5">@doc.Title</span>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3 justify-content-start">
+                                                    <div class="col-auto p-0">
+                                                        @if (doc.PublishYears is not null) {
+                                                            <span>@doc.PublishYears.ElementAt(0)</span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                @if (doc.AuthorName is not null)
+                                                {
+                                                    <div class="row justify-content-start gap-2">
+                                                        @foreach (var author in doc.AuthorName)
+                                                        {
+                                                            <div class="col-auto p-0">
+                                                                <span class="badge text-bg-secondary">@author</span>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
+                                            <div class="col-auto p-0 my-auto">
+                                                <button class="btn btn-success px-4" id="addBookButton">
+                                                    This is it
+                                                </button>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                    </div>
+                </div>
+            }
+
         @if (Book is not null && isEditingBook)
         {
             <EditForm Model="Book" OnValidSubmit="Submit" FormName="EditBookForm" class="p-0 p-lg-5">
@@ -113,10 +245,42 @@
             </EditForm>
         }
     </div>
-
 </div>
 
 @code {
+
+
+    private BookSearchDto? BookSearchDto { get; set; }
+
+    private OpenLibrarySearchResponse? SearchResults { get; set; }
+
+    private bool isAddingBook = true;
+
+    private bool isSearching = false;
+
+    protected override void OnInitialized()
+    {
+        Book = new BookDto() {
+            Title = "", Author = ""
+        };
+        ResetSearch();
+    }
+
+    private void ResetSearch() {
+        BookSearchDto = new BookSearchDto() {
+            Title = "", Author = ""
+        };
+    }
+
+    private async Task SubmitBookSearchAsync() {
+        isSearching = true;
+        SearchResults = await _bookService.SearchBookAsync(BookSearchDto!);
+        isSearching = false;
+        // ResetSearch();
+    }
+
+
+
 
     private BookDto? Book { get; set; }
 
@@ -127,16 +291,13 @@
 
     private bool isLoading = false, isEditingBook = false;
 
-    protected override void OnInitialized()
-    {
-        Book = new BookDto() {
-            Title = "", Author = ""
-        };
-    }
+
 
     private void RedirectToHome() {
-        NavigationManager.NavigateTo(NavigationManager.BaseUri);
+        _navManager.NavigateTo(_navManager.BaseUri);
     }
+
+
 
     private void ResetBook() {
         Book = new BookDto {

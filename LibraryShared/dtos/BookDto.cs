@@ -9,10 +9,15 @@ namespace LibraryShared.dtos
         public required string Title { get; set; }
         [Required]
         public required string Author { get; set; }
+        public int? CoverI { get; set; }
         public string? ImageUrl { get; set; }
         public string? Genre { get; set; }
         public ReadingStatus Status { get; set; }
         public int? Rating { get; set; }
         public string? PersonalNotes { get; set; }
+        public int? FirstPublishYear { get; set; }
+        public int[]? PublishYears { get; set; }
+        public List<string>? AuthorName { get; set; }
+        public List<string>? Subjects { get; set; }
     }
 }

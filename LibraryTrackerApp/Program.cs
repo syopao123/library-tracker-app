@@ -18,7 +18,7 @@ builder.Services.AddLocalStorageServices();
 // LibraryTrackerApi
 builder.Services.AddHttpClient("WebApi", httpClient =>
 {
-    httpClient.BaseAddress = new Uri("http://localhost:5068/");
+    httpClient.BaseAddress = new Uri("http://localhost:5068/api");
 });
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
@@ -27,5 +27,6 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthService>();
 builder.Services.AddSingleton<AuthService>();
+builder.Services.AddSingleton<BookService>();
 
 await builder.Build().RunAsync();

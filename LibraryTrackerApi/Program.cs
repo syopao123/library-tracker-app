@@ -32,7 +32,7 @@ builder.Services.AddHttpClient("BookSearchApi", httpClient =>
 {
     httpClient.BaseAddress = new Uri("https://openlibrary.org/search.json?");
     httpClient.DefaultRequestHeaders.Add(HeaderNames.Accept, "application/json");
-    httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "LibraryTrackerApp (https://github.com/syopao123/library-tracker-app)");
+    httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, $"LibraryTrackerApp ({builder.Configuration["UserAgent:OpenLibApi"]})");
 });
 
 builder.Services.AddSingleton<OpenLibraryService>();
