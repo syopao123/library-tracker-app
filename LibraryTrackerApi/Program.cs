@@ -1,11 +1,12 @@
-using System.Text.Json;
-using LibraryShared.dtos;
 using LibraryTrackerApi.Data;
 using LibraryTrackerApi.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
+using LibraryTrackerApi.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Net.Http.Headers;
 using Scalar.AspNetCore;
+
+var blazorClient = "blazorWasmClient";
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,8 +16,29 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddIdentityApiEndpoints<User>().AddEntityFrameworkStores<AppDbContext>();
 builder.Services.AddAuthorization();
+builder.Services.AddControllers();
+
+builder.Services.AddCors(options =>
+{
+    // LibraryTrackerApp frontend
+    options.AddPolicy(name: blazorClient, policy =>
+    {
+        policy.WithOrigins("http://localhost:5051").AllowAnyMethod().AllowAnyHeader();
+    });
+});
+
+// OpenLibrary Book Search API
+builder.Services.AddHttpClient("BookSearchApi", httpClient =>
+{
+    httpClient.BaseAddress = new Uri("https://openlibrary.org/search.json?");
+    httpClient.DefaultRequestHeaders.Add(HeaderNames.Accept, "application/json");
+    httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "LibraryTrackerApp (https://github.com/syopao123/library-tracker-app)");
+});
+
+builder.Services.AddSingleton<OpenLibraryService>();
 
 builder.Services.Configure<IdentityOptions>(options => options.SignIn.RequireConfirmedEmail = false);
+
 
 var app = builder.Build();
 
@@ -27,35 +49,13 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-
-app.MapGet("/books", (AppDbContext db) =>
-{
-    return db.Books.ToListAsync();
-});
-
-app.MapPost("/add-book", async (BookDto bookDto, AppDbContext db) =>
-{
-    // Check if book title exists
-    var result = await db.Books.Where(b => b.Title.ToUpper().Equals(bookDto.Title.ToUpper())).ToListAsync();
-
-    // Return the books from db matching the user's book
-    if (result.Count() > 0)
-        return Results.Ok(result);
-
-    // var book = new Book();
-
-    // db.Books.Add(book);
-    //await db.SaveChangesAsync();
-    //return Results.Created($"You successfully added {book.Title} by {book.Author}.", book);
-    return Results.Ok("test");
-});
-
-
+app.UseCors(blazorClient);
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
 // ASP.NET Core Identity endpoints
 app.MapIdentityApi<User>();
+app.MapControllers();
 
 app.Run();

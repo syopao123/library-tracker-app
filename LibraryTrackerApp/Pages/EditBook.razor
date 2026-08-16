@@ -1,6 +1,7 @@
-@page "/edit-book/{Id:guid}"
-@using LibraryTrackerApp.Data
-@inject MockDbService Db;
+@page "/edit-book"
+@using LibraryShared.dtos
+@using LibraryShared.enums
+
 @inject NavigationManager NavigationManager
 
 <PageTitle>Edit Book</PageTitle>
@@ -8,7 +9,7 @@
 <div class="p-5">
 
     <div class="row EditBookForm">
-        @if (Book is not null)
+        @if (Book is not null && isEditingBook)
         {
             <EditForm Model="Book" OnValidSubmit="Submit" FormName="EditBookForm" class="p-0 p-lg-5">
                 <DataAnnotationsValidator />
@@ -41,10 +42,7 @@
                         <label for="newBookGenre" class="form-label">Genre</label>
                         <InputSelect class="form-select" @bind-Value="Book.Genre">
                             <option value="" selected>Select a genre ...</option>
-                            @foreach (var genre in Db.Genres!)
-                            {
-                                <option value="@genre">@genre</option>
-                            }
+                            <option value="Fantasy">Fantasy</option>
                         </InputSelect>
                     </div>
                     <div class="col-6 col-lg-3">
@@ -120,42 +118,20 @@
 
 @code {
 
-    [Parameter]
-    public Guid Id { get; set; }
-
-    [SupplyParameterFromForm]
-    private Book? Book { get; set; }
+    private BookDto? Book { get; set; }
 
     private string? NewBookImageUrl { get; set; }
     private string? message { get; set; }
 
     private bool isRatingDisabled = true;
 
-    private bool isLoading = false, isEditingBook = true;
+    private bool isLoading = false, isEditingBook = false;
 
     protected override void OnInitialized()
     {
-        // Find book
-        var originalBook = Db.Books.Find((b) => b.Id.Equals(Id));
-
-        if (originalBook is not null)
-        {
-            Book = new Book {
-                Title = originalBook.Title,
-                Author = originalBook.Author,
-                ImageUrl = originalBook.ImageUrl,
-                Genre = originalBook.Genre,
-                Status = originalBook.Status,
-                Rating = originalBook.Rating,
-                PersonalNotes = originalBook.PersonalNotes
-            };
-            isRatingDisabled = Book.Status == ReadingStatus.Finished ? false : true;
-        }
-        else
-        {
-            isEditingBook = false;
-            ResetBook();
-        }
+        Book = new BookDto() {
+            Title = "", Author = ""
+        };
     }
 
     private void RedirectToHome() {
@@ -163,7 +139,7 @@
     }
 
     private void ResetBook() {
-        Book = new Book {
+        Book = new BookDto {
             Title = "",
             Author = "",
             Rating = null
@@ -172,55 +148,25 @@
     }
 
     private async Task Submit()
-    {
-        Book!.ImageUrl = GetImageUrl();
-
-        // Update book info
-        var originalBook = Db.Books.Find(b => b.Id.Equals(Id));
-
-        // If book exists, update it
-        if (originalBook is not null && isEditingBook) {
-            originalBook.Title = Book.Title;
-            originalBook.Author = Book.Author;
-            originalBook.ImageUrl = Book.ImageUrl;
-            originalBook.Genre = Book.Genre;
-            originalBook.Status = Book.Status;
-            originalBook.Rating = Book.Rating;
-            originalBook.PersonalNotes = Book.PersonalNotes;
-
-        // If not, add it to the database
-        } else {
-            Db.Books.Add(Book);
-        }
-        
-        RedirectToHome();
+    {        
+        // RedirectToHome();
     }
 
     private async Task DeleteBook()
     {
-        // Find original book
-        var originalBook = Db.Books.Find(b => b.Id.Equals(Id));
-        if (originalBook is not null)
-        {
-            var result = Db.Books.Remove(originalBook);
-            NavigationManager.NavigateTo(NavigationManager.BaseUri);
-        }
-        else
-        {
-            message = "Failed to delete book.";
-        }
+
     }
 
     private string GetImageUrl() {
 
-        bool isUri = Uri.TryCreate(NewBookImageUrl, UriKind.Absolute, out Uri uriResult);
+        bool isUri = Uri.TryCreate(NewBookImageUrl, UriKind.Absolute, out Uri? uriResult);
 
-        bool imageIsValidUrl = isUri && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+        bool imageIsValidUrl = isUri && (uriResult!.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
 
         if (imageIsValidUrl) {
-            return NewBookImageUrl;
+            return NewBookImageUrl!;
         } else {
-            return Book.ImageUrl;
+            return Book!.ImageUrl!;
         }
     }
 

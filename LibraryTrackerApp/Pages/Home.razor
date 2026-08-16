@@ -1,77 +1,57 @@
 ﻿@page "/"
-@using LibraryTrackerApp.Data
-@using LibraryTrackerApp.Pages.Components
 
-@inject MockDbService Db
+@attribute [Authorize]
 
 <PageTitle>My Library</PageTitle>
 
 @* Content *@
-<div class="p-3 p-lg-5">
-    <div class="row justify-content-between mt-4 mt-md-0">
-        @* Status and Genre filter buttons *@
-        <div class="col-auto">
-            <div class="d-flex flex-row align-items-end gap-3">
-                <label class="form-label d-none d-sm-block">Status:</label>
-                <select class="form-select" aria-label="Default select example" @onchange="FilterBooks">
-                    <option value="All" selected>All</option>
-                    <option value="ToRead">To Read</option>
-                    <option value="Reading">Reading</option>
-                    <option value="Finished">Finished</option>
-                </select>
+<div class="container-fluid">
+    <div class="p-3 p-lg-5">
+        <div class="row justify-content-between mt-4 mt-md-0">
+            @* Status and Genre filter buttons *@
+            <div class="col-auto">
+                <div class="d-flex flex-row align-items-end gap-3">
+                    <label class="form-label d-none d-sm-block">Status:</label>
+                    <select class="form-select" aria-label="Default select example" @onchange="FilterBooks">
+                        <option value="All" selected>All</option>
+                        <option value="ToRead">To Read</option>
+                        <option value="Reading">Reading</option>
+                        <option value="Finished">Finished</option>
+                    </select>
+                </div>
+            </div>
+            @* Add Book button *@
+            <div class="col-auto">
+                <NavLink href="edit-book" type="button" class="btn btn-success addBookBtn">
+                    <span class="d-flex gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
+                             class="bi bi-plus" viewBox="0 0 16 16">
+                            <path
+                            d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                        </svg>
+                        <span class="d-none d-sm-block">Add Book</span>
+                    </span>
+                </NavLink>
             </div>
         </div>
-        @* Add Book button *@
-        <div class="col-auto">
-            <a href="edit-book/@NewBookId" type="button" class="btn btn-success addBookBtn">
-                <span class="d-flex gap-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
-                         class="bi bi-plus" viewBox="0 0 16 16">
-                        <path
-                        d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-                    </svg>
-                    <span class="d-none d-sm-block">Add Book</span>
-                </span>
-            </a>
-        </div>
-    </div>
 
-    @* Book cards *@
-    <div class="row mt-3 mb-3 g-3 justify-content-center justify-content-lg-start">
-        @if (books != null)
-        {
-            foreach (var book in books)
-            {
-                <div class="col-auto">
-                    <BookCard Book="book" />
-                </div>
-            }
-        }
+        @* Book cards *@
+        <div class="row mt-3 mb-3 g-3 justify-content-center justify-content-lg-start">
+            <div class="col-auto">
+
+            </div>
+        </div>
     </div>
 </div>
 
 @code {
 
-    private List<Book>? books { get; set; }
-
     private string currentStatusFilter { get; set; } = "All";
     private string currentGenreFilter { get; set; } = "All";
-
-    private Guid NewBookId => GenerateNewId();
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        books = new List<Book>(Db.Books);
-    }
-
-    private Guid GenerateNewId() {
-        Guid newGuid;
-        var existingIds = Db.Books.Select(b => b.Id).ToHashSet();
-        do {
-            newGuid = Guid.NewGuid();
-        } while (existingIds.Contains(newGuid));
-        return newGuid;
     }
 
     private void FilterBooks(ChangeEventArgs e)
@@ -79,6 +59,6 @@
         var value = e.Value?.ToString();
 
         currentStatusFilter = string.IsNullOrWhiteSpace(value) ? "All" : e.Value!.ToString()!;
-        books = currentStatusFilter.Equals("All") ? Db.Books : Db.Books.Where(b => b.Status.ToString().Equals(currentStatusFilter)).ToList();
+        // books = currentStatusFilter.Equals("All") ? Db.Books : Db.Books.Where(b => b.Status.ToString().Equals(currentStatusFilter)).ToList();
     }
 }

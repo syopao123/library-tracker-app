@@ -1,0 +1,136 @@
+@using LibraryShared.dtos
+@using Services
+
+@inject AuthService _auth
+@inject NavigationManager _navigationManager
+
+<div class="row justify-content-center align-items-center min-vh-100">
+    <div class="col-auto">
+        <div class="card p-5 pb-4 border-0 shadow-md rounded-4" style="width: 30rem;">
+            <div class="card-body mb-4">
+                <EditForm EditContext="editContext" OnValidSubmit="Submit">
+                    <DataAnnotationsValidator />
+
+                    <div class="row mb-4 text-center text-success fw-bolder">
+                        <div class="col">
+                            <span class="fs-3">Personal Library Tracker</span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label for="email" class="form-label">Email</label>
+                            <InputText @bind-Value="registerDto.Email" @onkeydown='HandleFieldChange' class="form-control" type="email" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label for="password" class="form-label">Password</label>
+                            <InputText @bind-Value="registerDto.Password" class="form-control" type="password"/>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label for="password" class="form-label"> Confirm Password</label>
+                            <InputText @bind-Value="registerDto.ConfirmPassword" class="form-control" type="password"/>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4 text-center px-2">
+                        <button type="submit" class="btn btn-success px-5">Create Account</button>
+                    </div>
+
+                    <ValidationSummary class="mt-4 small" />
+
+                    @if (formMessage is not null)
+                    {
+                        <div class="row text-center mt-4">
+                            <p class="text-success small">@formMessage</p>
+                        </div>
+                    }
+
+                </EditForm>
+            </div>
+            <div class="card-footer bg-transparent text-center pt-4">
+                <span>Already have an account? <a class="text-decoration-none text-success fw-bold" href="" @onclick="ClickLogin">Sign In</a></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter, EditorRequired]
+    public required EventCallback OnComponentChange { get; set; }
+
+    public required RegisterDto registerDto { get; set; }
+
+    public required EditContext editContext { get; set; }
+    public required ValidationMessageStore messageStore;
+
+    private string? formMessage { get; set; }
+
+    private async void ClickLogin() {
+        await OnComponentChange.InvokeAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        registerDto = new() {
+            Email = "", Password = "", ConfirmPassword = ""
+        };
+        editContext = new EditContext(registerDto);
+        messageStore = new ValidationMessageStore(editContext);
+        editContext.OnFieldChanged += HandleFieldChange;
+    }
+
+    private void HandleFieldChange() {
+        messageStore.Clear();
+        editContext.NotifyValidationStateChanged();
+    }
+
+    private void HandleFieldChange(object? sender, FieldChangedEventArgs e)
+    {
+        messageStore.Clear();
+        editContext.NotifyValidationStateChanged();
+    }
+
+    private void ResetForm() {
+        registerDto = new() {
+            Email = "", Password = "", ConfirmPassword = ""
+        };
+    }
+
+    private void ClearErrors() {
+        messageStore.Clear();
+    }
+
+    private async Task Submit() {
+        ClearErrors();
+
+        var response = await _auth.RegisterUserAsync(registerDto);
+
+        // Registration is successful if response is null
+        // TODO: Improve registration flow
+        if (response is null) {
+            ResetForm();
+            formMessage = "You successfully registered";
+
+        } else {
+            if (response.Errors is not null)
+            {
+                foreach (var (field, messages) in response.Errors)
+                {
+                    var fieldIdentifier = new FieldIdentifier(registerDto, field);
+                    foreach (var message in messages)
+                    {
+                        messageStore.Add(fieldIdentifier, message);
+                    }
+                }
+                editContext.NotifyValidationStateChanged();
+            }
+        }
+    }
+}

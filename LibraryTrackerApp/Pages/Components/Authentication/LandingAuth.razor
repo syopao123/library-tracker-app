@@ -1,0 +1,13 @@
+@if (isLoggingIn) {
+    <Login OnComponentChange="HandleComponentChange" />
+} else {
+    <Register OnComponentChange="HandleComponentChange" />
+}
+
+@code {
+    private bool isLoggingIn = true;
+
+    public void HandleComponentChange() {
+        isLoggingIn = !isLoggingIn;
+    }
+}

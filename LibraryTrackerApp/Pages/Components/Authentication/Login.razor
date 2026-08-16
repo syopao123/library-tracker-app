@@ -1,0 +1,97 @@
+@using LibraryShared.dtos
+@using Services
+
+@inject NavigationManager _navManager
+@inject ILocalStorageService _localStorage
+@inject AuthService _auth
+
+
+<div class="row justify-content-center align-items-center min-vh-100">
+    <div class="col-auto">
+        <div class="card p-5 pb-4 border-0 shadow-md rounded-4" style="width: 30rem;">
+            <div class="card-body mb-4">
+                <EditForm Model=loginData OnValidSubmit="Submit">
+                    <DataAnnotationsValidator />
+
+                    <div class="row mb-4 text-center text-success fw-bolder">
+                        <div class="col">
+                            <span class="fs-3">Personal Library Tracker</span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col">
+                            <label for="email" class="form-label">Email</label>
+                            <InputText @bind-Value="loginData.Email" class="form-control" />
+                            <ValidationMessage For='() => loginData.Email' class="text-danger mt-2 small"/>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col">
+                            <label for="password" class="form-label">Password</label>
+                            <InputText type="password" @bind-Value="loginData.Password" class="form-control" />
+                            <ValidationMessage For='() => loginData.Password' class="text-danger mt-2 small"/>
+                        </div>
+                    </div>
+
+                    <div class="row text-center px-2 mt-4">
+                        <button type="submit" class="btn btn-success px-5">Sign In</button>
+                    </div>
+
+                    <div class="row text-center mt-4">
+                        <span class="text-danger small">@errorMessage</span>
+                    </div>
+
+                </EditForm>
+            </div>
+            <div class="card-footer bg-transparent text-center pt-4">
+                <span>
+                    Don't have an account? 
+                    <a class="text-decoration-none text-success fw-bold" href="" @onclick="ClickRegister">
+                        Create One
+                    </a>
+                </span>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter, EditorRequired]
+    public required EventCallback OnComponentChange { get; set; }
+
+    public required LoginDto loginData { get; set; }
+
+    private string? errorMessage { get; set; }
+
+    protected override void OnInitialized()
+    {
+        loginData = new()
+        {
+            Email = "",
+            Password = ""
+        };
+    }
+
+    private async Task Submit() {
+        var result = await _auth.LoginUserAsync(loginData);
+
+        if (result is null || result.Status is not null) {
+            errorMessage = result?.Title is null ? "Something went wrong, please try again" : result.Title;
+
+        } else {
+
+            if (result.TokenType.Equals("Bearer") && result.AccessToken is not null) {
+                _navManager.NavigateTo(_navManager.BaseUri, forceLoad: true);
+            }
+
+        }
+    }
+
+    private async void ClickRegister() {
+        await OnComponentChange.InvokeAsync();
+    }
+}

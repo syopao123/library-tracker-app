@@ -1,34 +1,21 @@
-@using LibraryTrackerApp.Data
+@using LibraryShared.dtos
+@using LibraryShared.enums
 
-<a href="edit-book/@Book.Id" class="card p-0 text-decoration-none">
+<a href="edit-book" class="card p-0 text-decoration-none">
 
-    <img src="@Book.ImageUrl" class="card-img-top" alt="@Book.Title"
+    <img src="" class="card-img-top" alt=""
 
     <div class="card-body">
 
         <div class="row pb-3">
-            @switch (Book.Status)
-            {
-                case ReadingStatus.ToRead:
-                    <div><span class="badge rounded-pill px-3 py-2 to-read">To Read</span></div>
-                    break;
-
-                case ReadingStatus.Reading:
-                    <div><span class="badge rounded-pill px-3 py-2 reading">Reading</span></div>
-                    break;
-
-                case ReadingStatus.Finished:
-                    <div><span class="badge rounded-pill px-3 py-2 finished">Finished</span></div>
-                    break;
-            }
-
+            <div><span class="badge rounded-pill px-3 py-2 to-read">To Read</span></div>
         </div>
 
         <div class="card-title">
-            <h5>@Book.Title</h5>
+            <h5>Book Title</h5>
         </div>
 
-        <p class="card-text">@Book.Genre</p>
+        <p class="card-text">Genre</p>
 
     </div>
     <div class="card-footer pb-4">
@@ -61,5 +48,5 @@
 @code {
 
     [Parameter, EditorRequired]
-    public Book Book { get; set; }
+    public BookDto Book { get; set; }
 }
