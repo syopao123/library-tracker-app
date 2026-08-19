@@ -4,33 +4,43 @@
         width: 20rem;
         height: 100%;
     }
+
     .card-img-top {
         width: 100%;
         height: 400px;
         object-fit: cover;
     }
-    .card, .card-img-top {
+
+    .card,
+    .card-img-top {
         border-top-left-radius: 10px;
         border-top-right-radius: 10px;
     }
+
     .card-text {
         color: rgb(110, 110, 110);
         font-size: 14px;
     }
-    .card, .card-footer {
+
+    .card,
+    .card-footer {
         border: none;
     }
+
     .card-footer {
         background: transparent;
     }
+
     .card-body .to-read {
         color: rgb(95, 62, 0) !important;
         background-color: rgb(241, 220, 179) !important;
     }
+
     .card-body .reading {
         color: rgb(16, 80, 58) !important;
         background-color: rgb(179, 241, 209) !important;
     }
+
     .card-body .finished {
         color: rgb(73, 73, 73) !important;
         background-color: rgb(233, 233, 233) !important;

@@ -12,6 +12,8 @@ namespace LibraryShared.classes
         public int NumFound { get; set; }
         [JsonPropertyName("docs")]
         public List<OpenLibraryDoc> Docs { get; set; } = new();
+        public bool IsSuccess { get; set; } = true;
+        public string? ErrorMessage { get; set; }
     }
 
     public class OpenLibraryDoc

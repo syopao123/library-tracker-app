@@ -1,0 +1,60 @@
+@using System.ComponentModel.DataAnnotations
+@using LibraryShared.classes
+
+<div class="col-12 p-5 border bg-white shadow-sm rounded-4">
+    <div class="row">
+        <div class="col-auto p-0">
+            @if (Doc.CoverI is not null)
+            {
+                <img src="https://covers.openlibrary.org/b/id/@(Doc.CoverI)-S.jpg" alt="No Image" style="width: 5rem;" />
+            }
+            else
+            {
+                <img src="..." alt="No Image" style="width: 5rem;" />
+            }
+        </div>
+        <div class="col ps-5 my-auto">
+            <div class="row justify-content-start">
+                <div class="col-auto p-0">
+                    <span class="fw-bold fs-5">@Doc.Title</span>
+                </div>
+            </div>
+            <div class="row mb-3 justify-content-start">
+                <div class="col-auto p-0">
+                    @if (Doc.PublishYears is not null)
+                    {
+                        <span>@Doc.PublishYears.ElementAt(0)</span>
+                    }
+                </div>
+            </div>
+            @if (Doc.AuthorName is not null)
+            {
+                <div class="row justify-content-start gap-2">
+                    @foreach (var author in Doc.AuthorName)
+                    {
+                        <div class="col-auto p-0">
+                            <span class="badge text-bg-secondary">@author</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+        <div class="col-auto p-0 my-auto">
+            <button class="btn btn-success px-4" id="addBookButton" @onclick="SelectBook">
+                This is it
+            </button>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required OpenLibraryDoc Doc { get; set; }
+    [Parameter, EditorRequired]
+    public required EventCallback<OpenLibraryDoc> OnBookSelect { get; set; }
+
+    private async Task SelectBook() {
+        await OnBookSelect.InvokeAsync(Doc);
+    }
+}

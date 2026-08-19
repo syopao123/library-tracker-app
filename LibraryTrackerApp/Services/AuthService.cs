@@ -13,12 +13,46 @@ namespace LibraryTrackerApp.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILocalStorageService _localStorage;
 
+        public string? AccessToken => _localStorage.GetItem<string>("accessToken");
+
         public AuthService(IHttpClientFactory httpClientFactory, ILocalStorageService localStorage)
         {
             _httpClientFactory = httpClientFactory;
             _localStorage = localStorage;
         }
 
+        public string? GetValidAccessTokenAsync()
+        {
+            return _localStorage.GetItem<string>("accessToken");
+        }
+
+        // Refreshes the user's access token
+        public async Task<bool> RefreshTokenUserAsync()
+        {
+            string? refreshToken = _localStorage.GetItem<string>("refreshToken");
+
+            if (string.IsNullOrEmpty(refreshToken) == false)
+            {
+                var httpClient = _httpClientFactory.CreateClient("WebApi");
+                var httpResponse = await httpClient.PostAsJsonAsync("refresh", refreshToken);
+
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    var contentStream = await httpResponse.Content.ReadFromJsonAsync<LoginResponse>();
+
+                    if (contentStream is not null)
+                    {
+                        _localStorage.SetItem<string>("accessToken", contentStream.AccessToken);
+                        _localStorage.SetItem<string>("refreshToken", contentStream.RefreshToken);
+
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        // Checks if current user is logged in or not
         public override Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             string? accessToken;

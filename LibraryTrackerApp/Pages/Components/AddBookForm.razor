@@ -1,0 +1,148 @@
+@using LibraryShared.classes
+@using LibraryShared.dtos
+@using LibraryShared.enums
+@using LibraryTrackerApp.Services
+
+@inject NavigationManager _navManager
+@inject BookService _bookService
+
+
+<div class="p-5">
+    <div class="row justify-content-center">
+        <div class="card p-5 pb-4 shadow-sm border-0 rounded-4" style="width: 70rem;">
+            <EditForm Model="Book" OnValidSubmit="Submit" FormName="AddBookForm">
+                <DataAnnotationsValidator />
+
+                <div class="card-header bg-transparent pb-3">
+
+                    <span class="fs-4">
+                        <span role="button" class="pe-3" @onclick="ReturnToSearch">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                 class="bi bi-arrow-left" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd"
+                                      d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8" />
+                            </svg>
+                        </span>
+                        Add Book
+                    </span>
+                </div>
+                <div class="card-body">
+
+                    <div class="row mb-4">
+                        <div class="col">
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label for="newBookTitle" class="form-label">Title</label>
+                                    <InputText @bind-Value="Book.Title" class="form-control" />
+                                </div>
+                            </div>
+                            @* TODO: Show proper message book has multiple authors *@
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label for="newBookAuthor" class="form-label">Author</label>
+                                    <InputText @bind-Value="Book.Author" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label for="newBookGenre" class="form-label">Genre</label>
+                                    <InputSelect @bind-Value="Book.Genre" class="form-select">
+                                        <option value="">------</option>
+                                        <option value="Action">Action</option>
+                                        <option value="Drama">Drama</option>
+                                        <option value="Fantasy">Fantasy</option>
+                                    </InputSelect>
+                                </div>
+                                <div class="col">
+                                    <label for="newBookStatus" class="form-label">Status</label>
+                                    <InputSelect @bind-Value="Book.Status" class="form-select"
+                                                 @bind-Value:after="ToggleRatingField">
+                                        <option value="@ReadingStatus.ToRead">To Read</option>
+                                        <option value="@ReadingStatus.Reading">Reading</option>
+                                        <option value="@ReadingStatus.Finished">Finished</option>
+
+                                    </InputSelect>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label for="newBookRating" class="form-label">Rating</label>
+                                    <InputSelect @bind-Value="Book.Rating" class="form-select"
+                                                 disabled="@(Book.Status.Equals(ReadingStatus.Finished) == false)">
+                                        <option value="">------</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                    </InputSelect>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="row mb-5">
+                                <div class="col">
+                                    <label for="newBookPersonalNotes" class="form-label">Personal Notes</label>
+                                    <InputTextArea @bind-Value="Book.PersonalNotes" class="form-control" rows="7" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row justify-content-end">
+                        <div class="col">
+                            <ValidationSummary class="small" />
+                        </div>
+                        <div class="col-auto p-0">
+                            <button class="btn btn-success" type="submit">
+                                Add Book
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter, EditorRequired]
+    public EventCallback OnReturnToSearch { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback OnSubmitBook { get; set; }
+
+    [Parameter, EditorRequired]
+    public required OpenLibraryDoc Doc { get; set; }
+
+    public required AddBookDto Book { get; set; }
+
+
+    protected override void OnInitialized()
+    {
+        Book = new AddBookDto()
+        {
+            Title = Doc.Title ?? "",
+            Author = Doc.AuthorName != null ? Doc.AuthorName[0] : "",
+            CoverI = Doc.CoverI
+        };
+    }
+
+    // Disable rating field if status is not finished
+    private void ToggleRatingField() {
+        Book.Rating = Book.Status.Equals(ReadingStatus.Finished) == true ? 5 : null;
+    }
+
+    private async Task ReturnToSearch() {
+        await OnReturnToSearch.InvokeAsync();
+    }
+
+    private async Task Submit()
+    {
+        var result = await _bookService.AddBookAsync(Book);
+        await OnSubmitBook.InvokeAsync();
+    }
+
+}

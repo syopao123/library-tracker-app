@@ -14,8 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddIdentityApiEndpoints<User>().AddEntityFrameworkStores<AppDbContext>();
 builder.Services.AddAuthorization();
+builder.Services.AddIdentityApiEndpoints<User>().AddEntityFrameworkStores<AppDbContext>();
 builder.Services.AddControllers();
 
 builder.Services.AddCors(options =>
@@ -32,10 +32,11 @@ builder.Services.AddHttpClient("BookSearchApi", httpClient =>
 {
     httpClient.BaseAddress = new Uri("https://openlibrary.org/search.json?");
     httpClient.DefaultRequestHeaders.Add(HeaderNames.Accept, "application/json");
-    httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, $"LibraryTrackerApp ({builder.Configuration["UserAgent:OpenLibApi"]})");
+    httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, builder.Configuration["UserAgent:OpenLibApi"]);
 });
 
 builder.Services.AddSingleton<OpenLibraryService>();
+builder.Services.AddScoped<BookManagerService>();
 
 builder.Services.Configure<IdentityOptions>(options => options.SignIn.RequireConfirmedEmail = false);
 

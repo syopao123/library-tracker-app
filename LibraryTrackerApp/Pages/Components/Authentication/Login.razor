@@ -36,7 +36,7 @@
                     </div>
 
                     <div class="row text-center px-2 mt-4">
-                        <button type="submit" class="btn btn-success px-5">Sign In</button>
+                        <button type="submit" class="btn btn-success px-5" disabled="@isLoading">Sign In</button>
                     </div>
 
                     <div class="row text-center mt-4">
@@ -67,6 +67,8 @@
 
     private string? errorMessage { get; set; }
 
+    private bool isLoading = false;
+
     protected override void OnInitialized()
     {
         loginData = new()
@@ -77,6 +79,7 @@
     }
 
     private async Task Submit() {
+        isLoading = true;
         var result = await _auth.LoginUserAsync(loginData);
 
         if (result is null || result.Status is not null) {
@@ -87,8 +90,8 @@
             if (result.TokenType.Equals("Bearer") && result.AccessToken is not null) {
                 _navManager.NavigateTo(_navManager.BaseUri, forceLoad: true);
             }
-
         }
+        isLoading = false;
     }
 
     private async void ClickRegister() {

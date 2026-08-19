@@ -1,14 +1,27 @@
 @using LibraryShared.dtos
-@using LibraryShared.enums
 
-<a href='edit-book' class="card rounded-3 p-0 text-decoration-none">
+<div role="button" data-bs-toggle="modal" data-bs-target="#@Book.Id-modal" class="card rounded-3 p-0 text-decoration-none">
 
-    <img src="..." class="card-img-top" alt="@(Book.CoverI is null ? Book.Title : Book.CoverI)" />
+    <img src="@(Book.ImageUrl ?? "./images/book.jpg")" class="card-img-top" alt="No Image Found" />
 
     <div class="card-body">
 
         <div class="row pb-3">
-            <div><span class="badge rounded-pill px-3 py-2 to-read">To Read</span></div>
+            <div>
+                @if (Book.Status.ToString().Equals("ToRead"))
+                {
+                    <span class="badge rounded-pill px-3 py-2 to-read">To Read</span>
+
+                }
+                else if (Book.Status.ToString().Equals("Reading"))
+                {
+                    <span class="badge rounded-pill px-3 py-2 reading">@Book.Status</span>
+                }
+                else if (Book.Status.ToString().Equals("Finished"))
+                {
+                    <span class="badge rounded-pill px-3 py-2 finished">@Book.Status</span>
+                }
+            </div>
         </div>
 
         <div class="card-title">
@@ -17,18 +30,43 @@
 
     </div>
 
-    <div class="card-footer pb-4 text-end">
-        <button class="btn btn-success btn-sm rounded-3">
-            Add Book
-        </button>
+    <div class="card-footer">
+
+
     </div>
-</a>
+</div>
+
+@* Modal *@
+<div class="modal fade" id="@Book.Id-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">@Book.Title</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @* Add EditForm book details *@
+                @Book.PersonalNotes
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" data-bs-dismiss="modal" class="btn btn-danger small" @onclick="RemoveBook">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @code {
+    [Parameter, EditorRequired]
+    public EventCallback<BookDto> OnRemoveBook { get; set; }
 
     [Parameter, EditorRequired]
     public BookDto Book { get; set; }
 
-    [Parameter]
-    public bool IsAddingBook { get; set; } = false;
+    private async Task RemoveBook() {
+        await OnRemoveBook.InvokeAsync(Book);
+    }
+
 }

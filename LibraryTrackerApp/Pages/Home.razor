@@ -1,7 +1,9 @@
 ﻿@page "/"
 
 @using LibraryTrackerApp.Services
+@using LibraryShared.classes
 @using LibraryShared.dtos
+@using LibraryShared.enums
 @using LibraryTrackerApp.Pages.Components
 
 @inject BookService _bookService
@@ -13,69 +15,113 @@
 @* Content *@
 <div class="container-fluid">
     <div class="p-3 p-lg-5">
-        <div class="row justify-content-between mt-4 mt-md-0">
-            @* Status and Genre filter buttons *@
-            <div class="col-auto">
-                <div class="d-flex flex-row align-items-end gap-3">
-                    <label class="form-label d-none d-sm-block">Status:</label>
-                    <select class="form-select" aria-label="Default select example" @onchange="FilterBooks">
-                        <option value="All" selected>All</option>
-                        <option value="ToRead">To Read</option>
-                        <option value="Reading">Reading</option>
-                        <option value="Finished">Finished</option>
-                    </select>
+
+        @if (isShowingLibrary && !isSearchingBook && !isAddingBook)
+        {
+            <div class="row justify-content-between mt-4 mt-md-0">
+                @* Status and Genre filter buttons *@
+                <div class="col-auto">
+                    <div class="d-flex flex-row align-items-end gap-3">
+                        <label class="form-label d-none d-sm-block">Status:</label>
+                        <select class="form-select" aria-label="Default select example" @onchange="FilterBooks">
+                            <option value="" selected>All</option>
+                            <option value="ToRead">To Read</option>
+                            <option value="Reading">Reading</option>
+                            <option value="Finished">Finished</option>
+                        </select>
+                    </div>
+                </div>
+                @* Add Book button *@
+                <div class="col-auto">
+                    <button type="button" class="btn btn-success addBookBtn" @onclick="ShowEditBook">
+                        <span class="d-flex gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
+                                 class="bi bi-plus" viewBox="0 0 16 16">
+                                <path
+                                d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                            </svg>
+                            <span class="d-none d-sm-block">Add Book</span>
+                        </span>
+                    </button>
                 </div>
             </div>
-            @* Add Book button *@
-            <div class="col-auto">
-                <NavLink href="edit-book" type="button" class="btn btn-success addBookBtn">
-                    <span class="d-flex gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
-                             class="bi bi-plus" viewBox="0 0 16 16">
-                            <path
-                            d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-                        </svg>
-                        <span class="d-none d-sm-block">Add Book</span>
-                    </span>
-                </NavLink>
-            </div>
-        </div>
 
-        @* Book cards *@
-        <div class="row mt-3 mb-3 g-3 justify-content-center justify-content-lg-start">
-            <div class="col-auto">
-                @if (UserBooks is not null) {
-                    @foreach (var book in UserBooks) {
-                        <BookCard Book=book />
-                    }
-                }
-            </div>
-        </div>
+            @* User Library *@
+            @if(UserBooks?.Count() == 0)
+            {
+                <span>Library is empty.</span>
+            } 
+            else 
+            {
+                <UserLibrary UserBooks="FilteredUserBooks ?? UserBooks" OnUpdateLibrary="GetUserBooksAsync" />
+            }
+
+        }
+        else if (isSearchingBook)
+        {
+            <EditBook OnReturnToLibrary="ToggleShowLibrary" OnBookSelect="HandleBookSelect" />
+        } 
+        else if (isAddingBook) 
+        {
+            <AddBookForm Doc=SelectedDoc OnReturnToSearch="HandleReturnToSearch" OnSubmitBook="ToggleShowLibrary" />
+        }
+
     </div>
 </div>
 
 @code {
 
     private List<BookDto>? UserBooks { get; set; }
-
-    private string currentStatusFilter { get; set; } = "All";
+    private List<BookDto>? FilteredUserBooks { get; set; }
     private string currentGenreFilter { get; set; } = "All";
+    private OpenLibraryDoc? SelectedDoc { get; set; }
+    private bool isShowingLibrary = true, isSearchingBook = false, isAddingBook = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        base.OnInitialized();
+        UserBooks = new();
+        await GetUserBooksAsync();
     }
-
-    // TODO: Implement get books for user
+    
     private async Task GetUserBooksAsync() {
-        // UserBooks = await _bookService.GetUserBooksAsync();
+        UserBooks = await _bookService.GetUserBooksAsync();
     }
 
     private void FilterBooks(ChangeEventArgs e)
     {
-        var value = e.Value?.ToString();
+        string? filter = e.Value?.ToString();
 
-        currentStatusFilter = string.IsNullOrWhiteSpace(value) ? "All" : e.Value!.ToString()!;
-        // books = currentStatusFilter.Equals("All") ? Db.Books : Db.Books.Where(b => b.Status.ToString().Equals(currentStatusFilter)).ToList();
+        if (UserBooks is not null && string.IsNullOrEmpty(filter) == false) {
+
+            FilteredUserBooks = UserBooks.Where(b => b.Status.ToString().Equals(filter)).ToList();
+
+        } else {
+            FilteredUserBooks = null;
+        }        
+    }
+
+    private void HandleReturnToSearch() {
+        isSearchingBook = true;
+        isAddingBook = false;
+    }
+
+    private void ShowEditBook() {
+        isShowingLibrary = false;
+        isSearchingBook = true;
+    }
+
+    private void HandleBookSelect(OpenLibraryDoc doc) {
+        SelectedDoc = doc;
+        isSearchingBook = false;
+        isAddingBook = true;
+    }
+
+    private async Task ToggleShowLibrary()
+    {
+        isSearchingBook = false;
+        isAddingBook = false;
+        isShowingLibrary = true;
+        await GetUserBooksAsync();
+        StateHasChanged();
     }
 }
