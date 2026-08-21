@@ -22,8 +22,8 @@ namespace LibraryTrackerApi.Services
             title = title.Replace(' ', '+');
             author = author.Replace(' ', '+');
 
-            string query = publishYear is null ? $"title={title}&author={author}&fields=title,author_name,cover_i,publish_year,subject" 
-                    : $"title={title}&author={author}&publish_year={publishYear}&fields=title,author_name,cover_i,publish_year,subject";
+            string query = publishYear is null ? $"title={title}&author={author}&fields=title,author_name,cover_i,publish_year,subject,key" 
+                    : $"title={title}&author={author}&publish_year={publishYear}&fields=title,author_name,cover_i,publish_year,subject,key";
 
             var httpClient = _httpClientFactory.CreateClient("BookSearchApi");
             using var httpResponseMessage = await httpClient.GetAsync(httpClient.BaseAddress + query);

@@ -29,12 +29,12 @@ namespace LibraryTrackerApp.Services
         // Refreshes the user's access token
         public async Task<bool> RefreshTokenUserAsync()
         {
-            string? refreshToken = _localStorage.GetItem<string>("refreshToken");
+            string? token = _localStorage.GetItem<string>("refreshToken");
 
-            if (string.IsNullOrEmpty(refreshToken) == false)
+            if (string.IsNullOrEmpty(token) == false)
             {
                 var httpClient = _httpClientFactory.CreateClient("WebApi");
-                var httpResponse = await httpClient.PostAsJsonAsync("refresh", refreshToken);
+                var httpResponse = await httpClient.PostAsJsonAsync("refresh", new { refreshToken = token});
 
                 if (httpResponse.IsSuccessStatusCode)
                 {

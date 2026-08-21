@@ -92,6 +92,7 @@
                     <div class="row justify-content-end">
                         <div class="col">
                             <ValidationSummary class="small" />
+                            <span class="text-danger small">@ErrorMessage</span>
                         </div>
                         <div class="col-auto p-0">
                             <button class="btn btn-success" type="submit">
@@ -112,27 +113,29 @@
     public EventCallback OnReturnToSearch { get; set; }
 
     [Parameter, EditorRequired]
-    public EventCallback OnSubmitBook { get; set; }
+    public EventCallback<AddBookDto> OnSubmitBook { get; set; }
 
     [Parameter, EditorRequired]
     public required OpenLibraryDoc Doc { get; set; }
 
     public required AddBookDto Book { get; set; }
 
+    private string? ErrorMessage { get; set; }
+
 
     protected override void OnInitialized()
     {
         Book = new AddBookDto()
         {
+            OpenLibraryKey = Doc.Key,
             Title = Doc.Title ?? "",
             Author = Doc.AuthorName != null ? Doc.AuthorName[0] : "",
             CoverI = Doc.CoverI
         };
     }
-
-    // Disable rating field if status is not finished
+    
     private void ToggleRatingField() {
-        Book.Rating = Book.Status.Equals(ReadingStatus.Finished) == true ? 5 : null;
+        Book.Rating = null;
     }
 
     private async Task ReturnToSearch() {
@@ -141,8 +144,14 @@
 
     private async Task Submit()
     {
-        var result = await _bookService.AddBookAsync(Book);
-        await OnSubmitBook.InvokeAsync();
+        ErrorMessage = "";
+        var (isSuccess, message) = await _bookService.AddBookAsync(Book);
+
+        if (isSuccess) {
+            await OnSubmitBook.InvokeAsync(Book);
+        } else {
+            ErrorMessage = message;
+        }
     }
 
 }

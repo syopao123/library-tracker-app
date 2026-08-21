@@ -17,6 +17,10 @@ namespace LibraryTrackerApi.Models
 
         public string? PersonalNotes { get; set; }
 
+        public string? CustomTitle { get; set; }
+        public string? CustomAuthor { get; set; }
+        public string? CustomImageUrl { get; set; }
+
         // Checks if user has rated the book once finished reading
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

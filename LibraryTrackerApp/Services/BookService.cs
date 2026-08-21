@@ -1,13 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
 using Microsoft.JSInterop;
 using System.Net.Http.Headers;
 using LibraryShared.dtos;
 using System.Text.Json;
 using LibraryShared.classes;
+using LibraryShared.enums;
+using System.Net;
 
 namespace LibraryTrackerApp.Services
 {
@@ -16,145 +14,96 @@ namespace LibraryTrackerApp.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILocalStorageService _localStorage;
 
+        private string? AccessToken => _localStorage.GetItem<string>("accessToken") ?? null;
+
         public BookService(IHttpClientFactory httpClientFactory, ILocalStorageService localStorage)
         {
             _httpClientFactory = httpClientFactory;
             _localStorage = localStorage;
         }
 
-        private string? GetAccessToken()
-        {
-            string? accessToken;
-            try
-            {
-                accessToken = _localStorage.GetItem<string>("accessToken");
-            }
-            catch
-            {
-                accessToken = null;
-            }
-            return accessToken;
-        }
-
         public async Task<OpenLibrarySearchResponse?> SearchBookAsync(BookSearchDto dto)
         {
-            try
-            {
-                string? accessToken = GetAccessToken();
-
-                if (accessToken is not null)
-                {
-                    var httpClient = _httpClientFactory.CreateClient("WebApi");
-                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-                    using var httpResponseMessage = await httpClient.PostAsJsonAsync(httpClient.BaseAddress + "/books/search", dto);
-
-                    if (httpResponseMessage.IsSuccessStatusCode)
-                    {
-                        var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();
-
-                        return await JsonSerializer.DeserializeAsync<OpenLibrarySearchResponse>(contentStream);
-                    }
-                }
-                // TODO: Make it so that the user gets a new accessToken again
-                // Also handle when api sends back unauthorized
+            if (string.IsNullOrEmpty(AccessToken))
                 return null;
-            }
-            catch (Exception ex)
+
+            var httpClient = _httpClientFactory.CreateClient("WebApi");
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            using var httpResponseMessage = await httpClient.PostAsJsonAsync(httpClient.BaseAddress + "/books/search", dto);
+
+            if (httpResponseMessage.IsSuccessStatusCode)
             {
-                var response = new OpenLibrarySearchResponse()
-                {
-                    IsSuccess = false,
-                    ErrorMessage = ex.Message
-                };
-                return response;
-            }
-        }
+                var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();
 
-        public async Task<List<BookDto>?> GetUserBooksAsync()
-        {
-            string? accessToken = GetAccessToken();
-
-            if (accessToken is not null)
-            {
-                string? userEmail = _localStorage.GetItem<string>("userEmail");
-
-                if (string.IsNullOrWhiteSpace(userEmail))
-                    return null;
-                
-                var userDto = new UserDto() { Email = userEmail };
-
-                var httpClient = _httpClientFactory.CreateClient("WebApi");
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-                using var httpResponseMessage = await httpClient.PostAsJsonAsync(httpClient.BaseAddress + "/books/library", userDto);
-
-                if (httpResponseMessage.IsSuccessStatusCode)
-                {
-                    using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();
-
-                    var books = await JsonSerializer.DeserializeAsync<List<BookDto>>(contentStream);
-                    return books;
-                }
+                return await JsonSerializer.DeserializeAsync<OpenLibrarySearchResponse>(contentStream);
             }
             return null;
         }
 
-        // TODO: Remove user email property from AddBookDto, retrieve it using Claims instead.
-        public async Task<BookDto?> AddBookAsync(AddBookDto dto)
+        public async Task<List<BookDto>?> GetUserBooksAsync()
         {
-            try
-            {
-                string? accessToken = GetAccessToken();
-
-                if (accessToken is not null)
-                {
-                    dto.UserEmail = _localStorage.GetItem<string>("userEmail");
-                    var httpClient = _httpClientFactory.CreateClient("WebApi");
-                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-                    using var httpResponseMessage = await httpClient.PostAsJsonAsync(httpClient.BaseAddress + "/books", dto);
-
-                    if (httpResponseMessage.IsSuccessStatusCode)
-                    {
-                        var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();
-
-                        return await JsonSerializer.DeserializeAsync<BookDto>(contentStream);
-                    }
-                }
-                // TODO: Make it so that the user gets a new accessToken again
-                // Also handle when api sends back unauthorized
+            if (string.IsNullOrEmpty(AccessToken))
                 return null;
-            }
-            catch (Exception)
+
+            var httpClient = _httpClientFactory.CreateClient("WebApi");
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            var httpResponseMessage = await httpClient.GetAsync(httpClient.BaseAddress + "/books/library");
+
+            if (httpResponseMessage.IsSuccessStatusCode)
             {
-                return null;
+                using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();
+
+                var books = await JsonSerializer.DeserializeAsync<List<BookDto>>(contentStream);
+                return books;
             }
+
+            return null;
         }
 
-        public async Task RemoveBookFromLibraryAsync(BookDto dto)
+        public async Task<(bool, string)> AddBookAsync(AddBookDto dto)
         {
-            try
-            {
-                string? accessToken = GetAccessToken();
-                string? userEmail = _localStorage.GetItem<string>("userEmail");
+            if (string.IsNullOrEmpty(AccessToken))
+                return (false, "Invalid user authentication.");
 
-                if (accessToken is not null && userEmail is not null)
+            var httpClient = _httpClientFactory.CreateClient("WebApi");
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            using var httpResponseMessage = await httpClient.PostAsJsonAsync(httpClient.BaseAddress + "/books", dto);
+
+            if (httpResponseMessage.IsSuccessStatusCode)
+            {
+                var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();
+                var content = await JsonSerializer.DeserializeAsync<BookDto>(contentStream);
+                
+                if (content != null && content.Title is not null)
                 {
-                    var httpClient = _httpClientFactory.CreateClient("WebApi");
-                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-                    using var httpResponseMessage = await httpClient.DeleteAsync(httpClient.BaseAddress + $"/books/{dto.Id}");
-
-                    if (httpResponseMessage.IsSuccessStatusCode)
-                    {
-                        // TODO: Implement proper success delete msg to user
-                        // var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();
-                        // return await JsonSerializer.DeserializeAsync<BookDto>(contentStream);
-                    }
+                    return (true, $"{content.Title} by {content.Author} has been successfully added to the library.");
                 }
-                // TODO: Make it so that the user gets a new accessToken again
-                // Also handle when api sends back unauthorized
             }
-            catch (Exception)
+            var message = await httpResponseMessage.Content.ReadAsStringAsync();
+            return (false, message);
+        }
+
+        public async Task UpdateBookAsync(BookDto dto)
+        {
+            
+        }
+
+        public async Task<(bool, string)> RemoveBookFromLibraryAsync(BookDto dto)
+        {
+            if (string.IsNullOrEmpty(AccessToken))
+                return (false, "Invalid authentication");
+
+            var httpClient = _httpClientFactory.CreateClient("WebApi");
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            using var httpResponseMessage = await httpClient.DeleteAsync(httpClient.BaseAddress + $"/books/{dto.Id}");
+
+            if (httpResponseMessage.IsSuccessStatusCode)
             {
+                return (true, "Success");
             }
+
+            var message = await httpResponseMessage.Content.ReadAsStringAsync();
+            return (false, message);
         }
     }
 }

@@ -9,13 +9,15 @@ namespace LibraryShared.dtos
 {
     public class AddBookDto : IValidatableObject
     {
-        public string? UserEmail { get; set; }
-
         [Required]
         public required string Title { get; set; }
 
         [Required]
         public required string Author { get; set; }
+
+        // TODO: Include docs "key" value when adding book!
+        [Required]
+        public required string OpenLibraryKey { get; set; }
 
         public int? CoverI { get; set; }
 

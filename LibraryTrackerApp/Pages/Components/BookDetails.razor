@@ -1,0 +1,105 @@
+@using LibraryShared.dtos
+@using LibraryShared.enums
+
+
+
+<EditForm Model="Book" OnValidSubmit="UpdateBook" FormName="@("bookDetails-" + Book.Id.ToString())">
+
+    <div class="row mb-2 p-4 px-5">
+
+        <div class="col-auto">
+            <img src="@Book.ImageUrl" alt="No Image Found" class="img-thumbnail rounded-4">
+        </div>
+
+        <div class="col">
+
+            <div class="row mb-4">
+                <div class="col">
+                    <label class="form-label">Title</label>
+                    <InputText @bind-Value="@Book.Title" class="form-control" />
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col">
+                    <label class="form-label">Author</label>
+                    <InputText @bind-Value="@Book.Author" class="form-control" />
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col">
+                    <label class="form-label">Genre</label>
+                    <InputText @bind-Value="@Book.Genre" class="form-control" />
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col">
+                    <label class="form-label">Status</label>
+                    <InputSelect @bind-Value="@Book.Status" @bind-Value:after="CheckRating" class="form-select">
+                        <option value="ToRead">To Read</option>
+                        <option value="Reading">Reading</option>
+                        <option value="Finished">Finished</option>
+                    </InputSelect>
+                </div>
+                <div class="col">
+                    <label class="form-label">Rating</label>
+                    <InputSelect @bind-Value="@Book.Rating" class="form-select" disabled="@(Book.Status.Equals(ReadingStatus.Finished) == false)">
+                        <option value="">------</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </InputSelect>
+                </div>
+
+            </div>
+
+            <div class="row mb-4">
+                <div class="col">
+                    <label class="form-label">Personal Notes</label>
+                    <InputTextArea @bind-Value="@Book.PersonalNotes" class="form-control" rows="5"></InputTextArea>
+                </div>
+
+            </div>
+
+            @if (isFormChanged)
+            {
+                <span>You changed something</span>
+            }
+
+
+
+        </div>
+
+    </div>
+
+</EditForm>
+
+
+
+@code {
+    [Parameter, EditorRequired]
+    public required EventCallback OnUpdateBook { get; set; }
+
+    [Parameter, EditorRequired]
+    public required BookDto Book { get; set; }
+
+    private int? OriginalRating { get; set; }
+
+    private bool isFormChanged { get; set; } = false;
+
+    protected override void OnInitialized()
+    {
+        OriginalRating = Book.Rating;
+    }
+
+    private void CheckRating() => Book.Rating = Book.Status.Equals(ReadingStatus.Finished) == false ? null : Book.Rating;
+
+    private void UpdateBook() {
+
+    }
+
+}

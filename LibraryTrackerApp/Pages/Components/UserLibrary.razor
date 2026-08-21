@@ -4,27 +4,124 @@
 @inject BookService _bookService
 
 <div class="row mt-3 mb-3 g-3 justify-content-center justify-content-lg-start">
-    @if (UserBooks is not null)
+    @if (UserBooks is not null && UserBooks.Count() > 0)
     {
+        <div class="row justify-content-between mt-4 mt-md-0">
+            @* Status and Genre filter buttons *@
+            <div class="col-auto">
+                <div class="d-flex flex-row align-items-end gap-3">
+                    <label class="form-label d-none d-sm-block">Status:</label>
+                    <select class="form-select" aria-label="Default select example" @onchange="FilterBooks">
+                        <option value="" selected>All</option>
+                        <option value="ToRead">To Read</option>
+                        <option value="Reading">Reading</option>
+                        <option value="Finished">Finished</option>
+                    </select>
+                </div>
+            </div>
+            @* Add Book button *@
+            <div class="col-auto">
+                <button type="button" class="btn btn-success addBookBtn" @onclick="ShowSearchBook">
+                    <span class="d-flex gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
+                             class="bi bi-plus" viewBox="0 0 16 16">
+                            <path
+                            d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                        </svg>
+                        <span class="d-none d-sm-block">Add Book</span>
+                    </span>
+                </button>
+            </div>
+        </div>
+
         @foreach (var book in UserBooks)
         {
             <div class="col-auto">
-                <BookCard Book=book OnRemoveBook="HandleBookRemove" />
+                <BookCard Book=book OnRemoveBook="HandleBookRemove" @key=book.Id />
             </div>
         }
+    }
+    else
+    {
+        <div class="row justify-content-center">
+            <div class="col-auto">
+                <div class="card p-5 border-0 rounded-5" style="width: 40rem;">
+                    <div class="row justify-content-center mb-4">
+                        <div class="rounded-circle bg-secondary-subtle d-flex align-items-center justify-content-center" style="height: 15rem; width: 15rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" fill="gray"
+                                 class="bi bi-book-half" viewBox="0 0 16 16">
+                                <path
+                                d="M8.5 2.687c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col text-center">
+                            <p class="fs-5 fw-bold">Your library is waiting for its first story.</p>
+                            <p>Start your digital sanctuary by adding books you've read or want to read.</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col text-center">
+                            <button type="button" class="btn btn-success addBookBtn" @onclick="ShowSearchBook">
+                                <span class="d-flex gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
+                                         class="bi bi-plus" viewBox="0 0 16 16">
+                                        <path
+                                        d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                                    </svg>
+                                    <span class="d-none d-sm-block">Add Your First Book</span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     }
 </div>
 
 @code {
+    [Parameter, EditorRequired]
+    public required EventCallback OnSearchBook { get; set; }
 
     [Parameter, EditorRequired]
     public required EventCallback OnUpdateLibrary { get; set; }
 
     [Parameter, EditorRequired]
     public required List<BookDto> UserBooks { get; set; }
+    private List<BookDto>? FilteredUserBooks { get; set; }
+    private string? CurrentStatusFilter { get; set; }
+
+
+    protected override void OnInitialized()
+    {
+        FilterBooks(new());
+    }
 
     private async Task HandleBookRemove(BookDto dto) {
         await _bookService.RemoveBookFromLibraryAsync(dto);
         await OnUpdateLibrary.InvokeAsync();
     }
+
+    // Wire up filter
+    private void FilterBooks(ChangeEventArgs e)
+    {
+        CurrentStatusFilter = e.Value?.ToString();
+
+        if (UserBooks is not null && string.IsNullOrWhiteSpace(CurrentStatusFilter) == false) {
+
+            FilteredUserBooks = UserBooks.Where(b => b.Status.ToString().Equals(CurrentStatusFilter)).ToList();
+
+        } else {
+
+            FilteredUserBooks = null;
+        }
+    }
+
+    private async Task ShowSearchBook() {
+        await OnSearchBook.InvokeAsync();
+    }
+
+
 }

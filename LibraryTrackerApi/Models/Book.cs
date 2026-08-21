@@ -13,6 +13,8 @@ namespace LibraryTrackerApi.Models
     {
         public Guid Id { get; set; }
 
+        public string OpenLibraryKey { get; set; } = null!;
+
         [Required(ErrorMessage = "Book title is required")]
         public required string Title { get; set; }
 

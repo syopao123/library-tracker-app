@@ -9,17 +9,16 @@ namespace LibraryTrackerApp.Services
 {
     public class AuthRefreshHandler : DelegatingHandler
     {
-
         private readonly AuthService _authService;
 
         public AuthRefreshHandler(AuthService authService)
         {
-            _authService = authService;            
+            _authService = authService;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var accessToken = _authService.GetValidAccessTokenAsync();
+            string? accessToken = _authService.GetValidAccessTokenAsync();
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             var response = await base.SendAsync(request, cancellationToken);
@@ -28,7 +27,7 @@ namespace LibraryTrackerApp.Services
             {
                 var refreshed = await _authService.RefreshTokenUserAsync();
 
-                if (refreshed)
+                if (refreshed && string.IsNullOrEmpty(accessToken) == false)
                 {
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _authService.AccessToken);
                     response = await base.SendAsync(request, cancellationToken);
