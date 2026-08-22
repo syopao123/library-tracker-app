@@ -1,5 +1,7 @@
 @using LibraryShared.dtos
 
+@inject IJSRuntime _js
+
 <div role="button" data-bs-toggle="modal" data-bs-target="#@Book.Id-modal" class="card rounded-3 p-0 text-decoration-none" id="bookCard-@Book.Id">
 
     <img src="@Book.ImageUrl" class="card-img-top" alt="No Image" />
@@ -42,29 +44,20 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h1 class="modal-title fs-5">Book Details</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @onclick="RestoreBookInfo"></button>
             </div>
             <div class="modal-body">
-                <BookDetails Book="Book" @key="Book.Id" OnUpdateBook="HandleBookUpdate" />
-            </div>
-            <div class="modal-footer">
-                <div class="row w-100 justify-content-between">
-                    <div class="col-auto">
-                        <button type="button" data-bs-dismiss="modal" class="btn btn-danger small"
-                                @onclick="RemoveBook">
-                            Delete
-                        </button>
-                    </div>
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="RestoreBookInfo">Close</button>
-                        <button type="button" class="btn btn-success">Save Changes</button>
-                    </div>
-                </div>
+                <BookDetails Book="Book" @key="Book.Id" OnUpdateBook="HandleBookUpdate" OnDeleteBook="HandleBookRemove" OnDismissModal="DismissModal" />
             </div>
         </div>
     </div>
 </div>
 
 @code {
+
+    [Parameter, EditorRequired]
+    public EventCallback<UpdateBookDto> OnUpdateBook { get; set; }
+
     [Parameter, EditorRequired]
     public EventCallback<BookDto> OnRemoveBook { get; set; }
 
@@ -114,11 +107,16 @@
         }
     }
 
-    private async Task HandleBookUpdate() {
-
+    private async Task HandleBookUpdate(UpdateBookDto dto) {
+        await DismissModal(dto.Id);
+        await OnUpdateBook.InvokeAsync(dto);
     }
-    private async Task RemoveBook() {
+
+    private async Task HandleBookRemove(Guid id) {
+        await DismissModal(id);
         await OnRemoveBook.InvokeAsync(Book);
     }
+
+    public async Task DismissModal(Guid id) => await _js.InvokeVoidAsync("dismissBootstrapModal", $"{id}-modal");
 
 }

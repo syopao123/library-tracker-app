@@ -14,8 +14,7 @@ namespace LibraryShared.dtos
 
         [Required]
         public required string Author { get; set; }
-
-        // TODO: Include docs "key" value when adding book!
+        
         [Required]
         public required string OpenLibraryKey { get; set; }
 

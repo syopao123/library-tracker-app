@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
+using System.Security.Cryptography.X509Certificates;
 using LibraryShared.dtos;
 using LibraryShared.enums;
 using LibraryTrackerApi.Data;
@@ -7,6 +9,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace LibraryTrackerApi.Services
 {
@@ -21,134 +24,120 @@ namespace LibraryTrackerApi.Services
             _userManager = userManager;
         }
 
-        // Checks if book exists in db, if not then add it
+        public async Task<Book?> GetBookAsync(Guid id) => await _db.Books.FindAsync(id);
+
+        // Checks if book exists in db
         private async Task<Book> CheckIfBookExistsAsync(AddBookDto dto)
         {
             var book = await _db.Books
-                .Where(b => b.OpenLibraryKey.Equals(dto.OpenLibraryKey))
+                .Where(b => b.OpenLibraryKey == dto.OpenLibraryKey)
                 .FirstOrDefaultAsync();
 
-            if (book is null)
+            if (book is not null) return book;
+
+            // Create new Book then store in db if it doesn't exist yet
+            Book newBook = new()
             {
-                Book newBook = new()
-                {
-                    OpenLibraryKey = dto.OpenLibraryKey,
-                    Title = dto.Title,
-                    Author = dto.Author,
-                    Genre = dto.Genre,
-                    ImageUrl = $"https://covers.openlibrary.org/b/id/{dto.CoverI}-L.jpg"
-                };
-                return newBook;
-            }
-            return book;
+                OpenLibraryKey = dto.OpenLibraryKey,
+                Title = dto.Title,
+                Author = dto.Author,
+                Genre = dto.Genre,
+                ImageUrl = $"https://covers.openlibrary.org/b/id/{dto.CoverI}-L.jpg"
+            };
+            await _db.Books.AddAsync(newBook);
+            return newBook;
         }
 
-        private async Task<BookOwner?> CheckIfUserAlreadyOwnsBookAsync(User user, Book book)
+        // Returns null if book has not been added to user's library yet
+        private async Task<BookOwner?> CheckIfUserAlreadyOwnsBookAsync(string userEmail, Book book)
         {
-            var bookOwner = await _db.BookOwners.Where(bo => bo.UserId == user.Id && bo.BookId == book.Id).FirstOrDefaultAsync();
-            return bookOwner;
+            return await _db.BookOwners.Where(bo => bo.User.Email == userEmail && bo.BookId == book.Id).FirstOrDefaultAsync();
         }
 
         // Add book to db and bind to user using BookOwner
-        public async Task<(AddBookResult, BookDto?)> AddBookAsync(string userEmail, AddBookDto dto)
+        public async Task<(bool, string, BookDto?)> AddBookAsync(string userEmail, AddBookDto dto)
         {
             var user = await _userManager.FindByEmailAsync(userEmail);
+            if (user is null) return (false, "User not found.", null);
 
             var dbBook = await CheckIfBookExistsAsync(dto);
 
-            if (user is not null)
+            var bookOwner = await CheckIfUserAlreadyOwnsBookAsync(userEmail, dbBook);
+            if (bookOwner is not null) return (false, "You already added the book to your library.", null);
+
+            var newBookOwner = new BookOwner()
             {
-                var bookDto = new BookDto() { Id= dbBook.Id, Title = dbBook.Title, Author = dbBook.Author };
+                UserId = user.Id,
+                Book = dbBook,
+                User = user,
+                Status = dto.Status,
+                Rating = dto.Rating,
+                PersonalNotes = dto.PersonalNotes,
+            };
 
-                var bookOwnerCheck = await CheckIfUserAlreadyOwnsBookAsync(user, dbBook);
+            await _db.BookOwners.AddAsync(newBookOwner);
+            await _db.SaveChangesAsync();
 
-                // Only create book ownership if user doesnt own the book
-                if (bookOwnerCheck == null)
-                {
-                    var newBookOwner = new BookOwner()
-                    {
-                        UserId = user.Id,
-                        Book = dbBook,
-                        User = user,
-                        Status = dto.Status,
-                        Rating = dto.Rating,
-                        PersonalNotes = dto.PersonalNotes,
-                    };
-
-                    await _db.BookOwners.AddAsync(newBookOwner);
-                    await _db.SaveChangesAsync();
-                    
-                    return (AddBookResult.BookAddedToLibrary, bookDto);
-                }
-                return (AddBookResult.UserAlreadyOwnsBook, bookDto);
-            }
-            return (AddBookResult.UserNotFound, null);
+            var bookDto = new BookDto() { Id = dbBook.Id, Title = dbBook.Title, Author = dbBook.Author };
+            return (true, "Book has been added to user's library.", bookDto);
         }
 
         public async Task<List<BookDto>?> GetUserBooksAsync(string userEmail)
         {
-            // Find user
-            var user = await _userManager.FindByEmailAsync(userEmail);
+            var userExists = await _userManager.Users.AnyAsync(u => u.Email == userEmail);
+            if (userExists == false) return null;
 
-            if (user is not null)
+            // Find books belonging to user
+            var userBooks = await _db.BookOwners.Where(bo => bo.User.Email == userEmail)
+            .Select(bo => new BookDto()
             {
-                List<BookDto>? userBooks = new();
+                Id = bo.Book.Id,
+                Title = bo.Book.Title,
+                Author = bo.Book.Author,
+                ImageUrl = bo.Book.ImageUrl,
+                Genre = bo.Book.Genre,
+                Status = bo.Status,
+                Rating = bo.Rating,
+                PersonalNotes = bo.PersonalNotes,
+                // TODO: Add FirstPublishYear & PublishYears to Book model
+            }).ToListAsync();
 
-                // Find book ownerships
-                var bookOwnership = await _db.BookOwners.Where(bo => bo.UserId == user.Id).ToListAsync();
+            return userBooks;
+        }
 
-                // Find books per ownership
-                foreach (var ownership in bookOwnership)
-                {
-                    var book = await _db.Books.FindAsync(ownership.BookId);
+        // Fetches then updates book details
+        public async Task<(bool, string)> UpdateUserBookAsync(string userEmail, UpdateBookDto dto)
+        {
+            var userExists = await _userManager.Users.AnyAsync(u => u.Email == userEmail);
+            if (userExists == false) return (false, "User not found.");
 
-                    // If book is found, store it inside dto then add it to userBooks
-                    if (book is not null)
-                    {
-                        var bookDto = new BookDto()
-                        {
-                            Id = book.Id,
-                            Title = book.Title,
-                            Author = book.Author,
-                            // TODO: Assign proper image url upon book add
-                            ImageUrl = book.ImageUrl,
-                            Genre = book.Genre ?? "",
-                            Status = ownership.Status,
-                            Rating = ownership.Rating,
-                            PersonalNotes = ownership.PersonalNotes ?? "",
-                            // TODO: Add FirstPublishYear & PublishYears to Book model
-                        };
-                        userBooks.Add(bookDto);
-                    }
-                }
-                // Return books to user
-                return userBooks;
-            }
-            return null;
+            var bookOwner = await _db.BookOwners.Include(bo => bo.Book).Where(bo => bo.User.Email == userEmail && bo.BookId == dto.Id).FirstOrDefaultAsync();
+            if (bookOwner is null) return (false, "User does not own the given book.");
+
+            bookOwner.CustomTitle = dto.CustomTitle ?? bookOwner.Book.Title;
+            bookOwner.CustomAuthor = dto.CustomAuthor ?? bookOwner.Book.Author;
+            bookOwner.CustomImageUrl = dto.CustomImageUrl ?? bookOwner.Book.ImageUrl;
+            bookOwner.Status = dto.UpdatedStatus;
+            bookOwner.Rating = dto.UpdatedRating;
+            bookOwner.PersonalNotes = dto.UpdatedPersonalNotes;
+
+            var result = await _db.SaveChangesAsync();
+            return result > 0 ? (true, "User successfully updated book details.") : (false, "No update was made.");
         }
 
         // Remove book from user's library
         public async Task<BookOwner?> RemoveBookFromUserAsync(string userEmail, Guid bookId)
         {
-            // Find user
-            var user = await _userManager.FindByEmailAsync(userEmail);
+            var userExists = await _userManager.Users.AnyAsync(u => u.Email == userEmail);
+            if (userExists == false) return null;
 
-            if (user is not null)
-            {
-                // Find book
-                var book = await _db.Books.FindAsync(bookId);
+            var bookOwner = await _db.BookOwners.Where(bo => bo.User.Email == userEmail && bo.BookId == bookId).FirstOrDefaultAsync();
+            if (bookOwner is null) return null;
 
-                if (book is not null)
-                {
-                    var bookOwner = await _db.BookOwners.Where(bo => bo.BookId.Equals(book.Id) && bo.UserId.Equals(user.Id)).FirstAsync();
-                    _db.BookOwners.Remove(bookOwner);
-                    var result = await _db.SaveChangesAsync();
+            _db.BookOwners.Remove(bookOwner);
+            var result = await _db.SaveChangesAsync();
 
-                    if (result > 0)
-                        return bookOwner;
-                }
-            }
-            return null;
+            return bookOwner;
         }
     }
 }

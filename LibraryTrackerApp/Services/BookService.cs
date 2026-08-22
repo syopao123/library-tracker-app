@@ -83,9 +83,20 @@ namespace LibraryTrackerApp.Services
             return (false, message);
         }
 
-        public async Task UpdateBookAsync(BookDto dto)
+        public async Task<(bool, string)> UpdateBookAsync(UpdateBookDto dto)
         {
+            if (string.IsNullOrEmpty(AccessToken))
+                return (false, "Invalid user authentication");
             
+            var httpClient = _httpClientFactory.CreateClient("WebApi");
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            using var httpResponseMessage = await httpClient.PatchAsJsonAsync(httpClient.BaseAddress + "/books", dto);
+
+            if (httpResponseMessage.IsSuccessStatusCode)
+                return (true, "You successfully updated your book.");
+                
+            var message = await httpResponseMessage.Content.ReadAsStringAsync();
+            return (false, message);
         }
 
         public async Task<(bool, string)> RemoveBookFromLibraryAsync(BookDto dto)

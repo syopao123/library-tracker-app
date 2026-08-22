@@ -4,7 +4,10 @@
 @inject BookService _bookService
 
 <div class="row mt-3 mb-3 g-3 justify-content-center justify-content-lg-start">
-    @if (UserBooks is not null && UserBooks.Count() > 0)
+
+    <span>@ErrorMessage</span>
+
+    @if (UserBooks is not null && UserBooks.Count() > 0 && FilteredUserBooks is not null)
     {
         <div class="row justify-content-between mt-4 mt-md-0">
             @* Status and Genre filter buttons *@
@@ -34,10 +37,10 @@
             </div>
         </div>
 
-        @foreach (var book in UserBooks)
+        @foreach (var book in FilteredUserBooks)
         {
             <div class="col-auto">
-                <BookCard Book=book OnRemoveBook="HandleBookRemove" @key=book.Id />
+                <BookCard Book=book OnRemoveBook="HandleBookRemove" @key=book.Id OnUpdateBook="HandleBookUpdate" />
             </div>
         }
     }
@@ -93,35 +96,39 @@
     private List<BookDto>? FilteredUserBooks { get; set; }
     private string? CurrentStatusFilter { get; set; }
 
+    // TODO: Display beautifully
+    private string ErrorMessage { get; set; } = "";
 
-    protected override void OnInitialized()
+
+    protected override async Task OnInitializedAsync()
     {
-        FilterBooks(new());
+        FilteredUserBooks = UserBooks;
+    }
+
+    private async Task FilterBooks(ChangeEventArgs e) {
+        CurrentStatusFilter = e.Value?.ToString();
+
+        if (string.IsNullOrWhiteSpace(CurrentStatusFilter))
+            FilteredUserBooks = UserBooks;
+        else
+            FilteredUserBooks = UserBooks.Where(b => b.Status.ToString().Equals(CurrentStatusFilter)).ToList();
+
+        if (FilteredUserBooks is null) FilteredUserBooks = UserBooks;
     }
 
     private async Task HandleBookRemove(BookDto dto) {
-        await _bookService.RemoveBookFromLibraryAsync(dto);
-        await OnUpdateLibrary.InvokeAsync();
+        var (result, message) = await _bookService.RemoveBookFromLibraryAsync(dto);
+        if (result) await OnUpdateLibrary.InvokeAsync();
+        else ErrorMessage = message;
     }
 
-    // Wire up filter
-    private void FilterBooks(ChangeEventArgs e)
-    {
-        CurrentStatusFilter = e.Value?.ToString();
-
-        if (UserBooks is not null && string.IsNullOrWhiteSpace(CurrentStatusFilter) == false) {
-
-            FilteredUserBooks = UserBooks.Where(b => b.Status.ToString().Equals(CurrentStatusFilter)).ToList();
-
-        } else {
-
-            FilteredUserBooks = null;
-        }
+    private async Task HandleBookUpdate(UpdateBookDto dto) {
+        var (result, message) = await _bookService.UpdateBookAsync(dto);
+        if (result) await OnUpdateLibrary.InvokeAsync();
+        else ErrorMessage = message;
     }
 
     private async Task ShowSearchBook() {
         await OnSearchBook.InvokeAsync();
     }
-
-
 }

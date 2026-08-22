@@ -1,7 +1,6 @@
+@using System.ComponentModel.DataAnnotations
 @using LibraryShared.dtos
 @using LibraryShared.enums
-
-
 
 <EditForm Model="Book" OnValidSubmit="UpdateBook" FormName="@("bookDetails-" + Book.Id.ToString())">
 
@@ -65,15 +64,21 @@
 
             </div>
 
-            @if (isFormChanged)
-            {
-                <span>You changed something</span>
-            }
-
-
-
+            <div class="row justify-content-between align-items-center">
+                <div class="col-auto">
+                    @foreach (var error in Errors)
+                    {
+                        <span class="text-danger small">@error.ToString()</span>
+                    }
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-danger" @onclick="() => OnDeleteBook.InvokeAsync(Book.Id)">
+                        Delete
+                    </button>
+                    <button class="btn btn-success">Save Changes</button>
+                </div>
+            </div>
         </div>
-
     </div>
 
 </EditForm>
@@ -81,25 +86,43 @@
 
 
 @code {
+
+    [Parameter,EditorRequired]
+    public EventCallback<Guid> OnDismissModal { get; set; }
+
     [Parameter, EditorRequired]
-    public required EventCallback OnUpdateBook { get; set; }
+    public EventCallback<UpdateBookDto> OnUpdateBook { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<Guid> OnDeleteBook { get; set; }
 
     [Parameter, EditorRequired]
     public required BookDto Book { get; set; }
 
-    private int? OriginalRating { get; set; }
+    private UpdateBookDto? UpdatedBook { get; set; }
 
-    private bool isFormChanged { get; set; } = false;
-
-    protected override void OnInitialized()
-    {
-        OriginalRating = Book.Rating;
-    }
+    private List<ValidationResult> Errors { get; set; } = new();
 
     private void CheckRating() => Book.Rating = Book.Status.Equals(ReadingStatus.Finished) == false ? null : Book.Rating;
 
-    private void UpdateBook() {
+    private async Task UpdateBook()
+    {
+        UpdatedBook = new()
+        {
+            Id = Book.Id,
+            CustomTitle = Book.Title,
+            CustomAuthor = Book.Author,
+            UpdatedGenre = Book.Genre,
+            UpdatedStatus = Book.Status,
+            UpdatedRating = Book.Rating,
+            UpdatedPersonalNotes = Book.PersonalNotes
+        };
 
+        var context = new ValidationContext(UpdatedBook);
+        bool updateIsValid = Validator.TryValidateObject(UpdatedBook, context, Errors);
+        if (updateIsValid) {
+            await OnUpdateBook.InvokeAsync(UpdatedBook);
+            Errors = new();
+        }
     }
-
 }
