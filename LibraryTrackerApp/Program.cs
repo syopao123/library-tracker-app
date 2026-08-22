@@ -27,9 +27,9 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 // Authorization
 builder.Services.AddAuthorizationCore();
-builder.Services.AddScoped<AuthenticationStateProvider, AuthService>();
-builder.Services.AddSingleton<AuthService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthService>());
 
-builder.Services.AddSingleton<BookService>();
+builder.Services.AddScoped<BookService>();
 
 await builder.Build().RunAsync();
