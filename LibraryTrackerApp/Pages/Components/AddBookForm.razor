@@ -1,3 +1,4 @@
+@using System.Reflection.Metadata
 @using LibraryShared.classes
 @using LibraryShared.dtos
 @using LibraryShared.enums
@@ -33,24 +34,41 @@
                             <div class="row mb-3">
                                 <div class="col">
                                     <label for="newBookTitle" class="form-label">Title</label>
-                                    <InputText @bind-Value="Book.Title" class="form-control" />
+                                    <InputText @bind-Value="Book.Title" class="form-control" disabled="true"/>
                                 </div>
                             </div>
                             @* TODO: Show proper message book has multiple authors *@
                             <div class="row mb-3">
                                 <div class="col">
-                                    <label for="newBookAuthor" class="form-label">Author</label>
-                                    <InputText @bind-Value="Book.Author" class="form-control" />
+                                    <label for="newBookAuthor" class="form-label">
+                                        Author
+                                        <span class="text-danger"> *</span>
+                                    </label>
+                                    @* <InputText @bind-Value="Book.Author" class="form-control" /> *@
+                                    <InputSelect @bind-Value="Book.CustomAuthor" class="form-select">
+                                        <option value="">Please select an author</option>
+                                        @if (Doc.AuthorName is not null && Doc.AuthorName.Count() > 0)
+                                        {
+                                            @foreach (var author in Doc.AuthorName)
+                                            {
+                                                <option value="@author">@author</option>
+                                            }
+                                        }
+                                    </InputSelect>
                                 </div>
                             </div>
                             <div class="row mb-3">
                                 <div class="col">
                                     <label for="newBookGenre" class="form-label">Genre</label>
-                                    <InputSelect @bind-Value="Book.Genre" class="form-select">
+                                    <InputSelect @bind-Value="Book.CustomGenre" class="form-select">
                                         <option value="">------</option>
-                                        <option value="Action">Action</option>
-                                        <option value="Drama">Drama</option>
-                                        <option value="Fantasy">Fantasy</option>
+                                        @if (Doc.Subjects is not null && Doc.Subjects.Count() > 0) 
+                                        {
+                                            @foreach (var genre in Doc.Subjects)
+                                            {
+                                                <option value="@genre">@genre</option>
+                                            }
+                                        }
                                     </InputSelect>
                                 </div>
                                 <div class="col">
@@ -129,8 +147,10 @@
         {
             OpenLibraryKey = Doc.Key,
             Title = Doc.Title ?? "",
-            Author = Doc.AuthorName != null ? Doc.AuthorName[0] : "",
-            CoverI = Doc.CoverI
+            AuthorNames = Doc.AuthorName ?? [ "No authors found." ],
+            Subjects = Doc.Subjects ?? null,
+            CoverI = Doc.CoverI,
+            CustomAuthor = "",
         };
     }
     

@@ -9,7 +9,7 @@ namespace LibraryShared.dtos
         public string? CustomTitle { get; set; }
         public string? CustomAuthor { get; set; }
         public string? CustomImageUrl { get; set; }
-        public string? UpdatedGenre { get; set; }
+        public string? CustomGenre { get; set; }
         public required ReadingStatus UpdatedStatus { get; set; }
         public int? UpdatedRating { get; set; }
         public string? UpdatedPersonalNotes { get; set; }

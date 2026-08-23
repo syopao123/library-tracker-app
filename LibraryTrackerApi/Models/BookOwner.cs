@@ -18,7 +18,10 @@ namespace LibraryTrackerApi.Models
         public string? PersonalNotes { get; set; }
 
         public string? CustomTitle { get; set; }
-        public string? CustomAuthor { get; set; }
+
+        [Required(ErrorMessage = "Custom author is required.")]
+        public required string CustomAuthor { get; set; }
+        public string? CustomGenre { get; set; }
         public string? CustomImageUrl { get; set; }
 
         // Checks if user has rated the book once finished reading

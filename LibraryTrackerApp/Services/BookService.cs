@@ -57,7 +57,7 @@ namespace LibraryTrackerApp.Services
                 return books;
             }
 
-            return null;
+            return new();
         }
 
         public async Task<(bool, string)> AddBookAsync(AddBookDto dto)
@@ -76,7 +76,7 @@ namespace LibraryTrackerApp.Services
                 
                 if (content != null && content.Title is not null)
                 {
-                    return (true, $"{content.Title} by {content.Author} has been successfully added to the library.");
+                    return (true, $"{content.Title} by {content.CustomAuthor} has been successfully added to the library.");
                 }
             }
             var message = await httpResponseMessage.Content.ReadAsStringAsync();

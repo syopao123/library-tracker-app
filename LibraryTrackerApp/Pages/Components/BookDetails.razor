@@ -22,14 +22,30 @@
             <div class="row mb-4">
                 <div class="col">
                     <label class="form-label">Author</label>
-                    <InputText @bind-Value="@Book.Author" class="form-control" />
+                    <InputSelect @bind-Value=@Book.CustomAuthor class="form-select">
+                    @if(Book.AuthorName is not null && Book.AuthorName.Count() > 0)
+                    {
+                        @foreach (var author in Book.AuthorName)
+                        {
+                            <option value="@author">@author</option>
+                        }
+                    }
+                    </InputSelect>
                 </div>
             </div>
 
             <div class="row mb-4">
                 <div class="col">
                     <label class="form-label">Genre</label>
-                    <InputText @bind-Value="@Book.Genre" class="form-control" />
+                    <InputSelect @bind-Value="@Book.CustomGenre" class="form-select">
+                    @if (Book.Subjects is not null && Book.Subjects.Count() > 0)
+                    {
+                        foreach (var genre in Book.Subjects)
+                        {
+                            <option value="@genre">@genre</option>
+                        }
+                    }
+                    </InputSelect>
                 </div>
             </div>
 
@@ -72,10 +88,10 @@
                     }
                 </div>
                 <div class="col-auto">
-                    <button class="btn btn-danger" @onclick="() => OnDeleteBook.InvokeAsync(Book.Id)">
+                    <button type="button" class="btn btn-danger" @onclick="() => OnDeleteBook.InvokeAsync(Book.Id)">
                         Delete
                     </button>
-                    <button class="btn btn-success">Save Changes</button>
+                    <button type="button" class="btn btn-success">Save Changes</button>
                 </div>
             </div>
         </div>
@@ -111,8 +127,8 @@
         {
             Id = Book.Id,
             CustomTitle = Book.Title,
-            CustomAuthor = Book.Author,
-            UpdatedGenre = Book.Genre,
+            CustomAuthor = Book.CustomAuthor,
+            CustomGenre = Book.CustomGenre,
             UpdatedStatus = Book.Status,
             UpdatedRating = Book.Rating,
             UpdatedPersonalNotes = Book.PersonalNotes

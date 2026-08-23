@@ -14,8 +14,8 @@ namespace LibraryShared.dtos
         public required string Title { get; set; }
 
         [Required]
-        [JsonPropertyName("author")]
-        public required string Author { get; set; }
+        [JsonPropertyName("customAuthor")]
+        public required string CustomAuthor { get; set; }
 
         [JsonPropertyName("coverI")]
         public int? CoverI { get; set; }
@@ -23,8 +23,8 @@ namespace LibraryShared.dtos
         [JsonPropertyName("imageUrl")]
         public string? ImageUrl { get; set; }
 
-        [JsonPropertyName("genre")]
-        public string? Genre { get; set; }
+        [JsonPropertyName("customGenre")]
+        public string? CustomGenre { get; set; }
 
         [JsonPropertyName("status")]
         public ReadingStatus Status { get; set; }

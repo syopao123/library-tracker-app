@@ -19,9 +19,9 @@ namespace LibraryTrackerApi.Models
         public required string Title { get; set; }
 
         [Required(ErrorMessage = "Book author is required")]
-        public required string Author { get; set; }
+        public required List<string> AuthorNames { get; set; }
 
-        public string? Genre { get; set; }
+        public List<string>? Subjects { get; set; }
         public string ImageUrl { get; set; } = "images/book.jpg";
 
         public List<BookOwner> BookOwners { get; set; } = new();

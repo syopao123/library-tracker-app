@@ -40,8 +40,8 @@ namespace LibraryTrackerApi.Services
             {
                 OpenLibraryKey = dto.OpenLibraryKey,
                 Title = dto.Title,
-                Author = dto.Author,
-                Genre = dto.Genre,
+                AuthorNames = dto.AuthorNames,
+                Subjects = dto.Subjects,
                 ImageUrl = $"https://covers.openlibrary.org/b/id/{dto.CoverI}-L.jpg"
             };
             await _db.Books.AddAsync(newBook);
@@ -73,12 +73,14 @@ namespace LibraryTrackerApi.Services
                 Status = dto.Status,
                 Rating = dto.Rating,
                 PersonalNotes = dto.PersonalNotes,
+                CustomAuthor = dto.CustomAuthor,
+                CustomGenre = dto.CustomGenre
             };
 
             await _db.BookOwners.AddAsync(newBookOwner);
             await _db.SaveChangesAsync();
 
-            var bookDto = new BookDto() { Id = dbBook.Id, Title = dbBook.Title, Author = dbBook.Author };
+            var bookDto = new BookDto() { Id = dbBook.Id, Title = dbBook.Title, CustomAuthor = newBookOwner.CustomAuthor };
             return (true, "Book has been added to user's library.", bookDto);
         }
 
@@ -93,13 +95,14 @@ namespace LibraryTrackerApi.Services
             {
                 Id = bo.Book.Id,
                 Title = bo.Book.Title,
-                Author = bo.Book.Author,
+                CustomAuthor = bo.CustomAuthor,
                 ImageUrl = bo.Book.ImageUrl,
-                Genre = bo.Book.Genre,
+                CustomGenre = bo.CustomGenre,
                 Status = bo.Status,
                 Rating = bo.Rating,
                 PersonalNotes = bo.PersonalNotes,
-                // TODO: Add FirstPublishYear & PublishYears to Book model
+                Subjects = bo.Book.Subjects,
+                AuthorName = bo.Book.AuthorNames
             }).ToListAsync();
 
             return userBooks;
@@ -115,14 +118,15 @@ namespace LibraryTrackerApi.Services
             if (bookOwner is null) return (false, "User does not own the given book.");
 
             bookOwner.CustomTitle = dto.CustomTitle ?? bookOwner.Book.Title;
-            bookOwner.CustomAuthor = dto.CustomAuthor ?? bookOwner.Book.Author;
+            bookOwner.CustomAuthor = dto.CustomAuthor ?? bookOwner.CustomAuthor;
             bookOwner.CustomImageUrl = dto.CustomImageUrl ?? bookOwner.Book.ImageUrl;
+            bookOwner.CustomGenre = dto.CustomGenre;
             bookOwner.Status = dto.UpdatedStatus;
             bookOwner.Rating = dto.UpdatedRating;
             bookOwner.PersonalNotes = dto.UpdatedPersonalNotes;
 
             var result = await _db.SaveChangesAsync();
-            return result > 0 ? (true, "User successfully updated book details.") : (false, "No update was made.");
+            return result > 0 ? (true, "User successfully updated book details.") : (true, "No update was made.");
         }
 
         // Remove book from user's library
