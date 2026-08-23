@@ -1,4 +1,5 @@
-.addBookBtn, .addBookBtn:hover {
+.addBookButton {
     background-color: #00857a;
+    color: white;
     border-radius: 10px;
 }

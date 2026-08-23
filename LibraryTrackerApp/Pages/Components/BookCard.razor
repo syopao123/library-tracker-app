@@ -30,6 +30,11 @@
             <h5>@Book.Title</h5>
         </div>
 
+        <p class="small">@Book.CustomAuthor</p>
+        @if (!string.IsNullOrEmpty(Book.CustomGenre))
+        {
+            <p class="small text-secondary">@(char.ToUpper(Book.CustomGenre[0]) + Book.CustomGenre.Substring(1))</p>
+        }
     </div>
 
     <div class="card-footer">

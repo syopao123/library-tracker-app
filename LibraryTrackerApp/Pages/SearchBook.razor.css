@@ -1,11 +1,5 @@
-    .cancelBtn, .cancelBtn:hover {
-        background-color: white;
-        color: #006a61;
-        border: 1px solid #006a61;
-        border-radius: 10px;
-    }
-    .saveBookBtn, .saveBookBtn:hover {
-        background-color: #006a61;
+    .searchBookBtn, .searchBookBtn:hover {
+        background-color: #00857a;
         color: white;
         border-radius: 10px;
     }

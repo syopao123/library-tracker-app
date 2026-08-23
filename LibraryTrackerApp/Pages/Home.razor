@@ -56,7 +56,9 @@
 
     protected override async Task OnInitializedAsync()
     {
+        isLoading = !isLoading;
         UserBooks = await _bookService.GetUserBooksAsync();
+        isLoading = !isLoading;
     }
     
     private async Task GetUserBooksAsync() {
