@@ -2,102 +2,229 @@
 @using LibraryShared.dtos
 @using LibraryShared.enums
 
-<EditForm Model="Book" OnValidSubmit="UpdateBook" FormName="@("bookDetails-" + Book.Id.ToString())">
+@if (isEditing)
+{
+    <EditForm Model="Book" OnValidSubmit="UpdateBook" FormName="@("bookDetails-" + Book.Id.ToString())">
 
-    <div class="row mb-2 p-4 px-5">
+        <div class="row mb-2 p-4 px-5">
+
+            <div class="col-auto">
+                <img src="@Book.ImageUrl" alt="No Image Found" class="rounded-4">
+            </div>
+
+            <div class="col">
+
+                <div class="row mb-4">
+                    <div class="col">
+                        <label class="form-label">Title</label>
+                        <InputText @bind-Value="@Book.Title" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col">
+                        <label class="form-label">Author</label>
+                        <InputSelect @bind-Value=@Book.CustomAuthor class="form-select">
+                            @if (Book.AuthorName is not null && Book.AuthorName.Count() > 0)
+                            {
+                                @foreach (var author in Book.AuthorName)
+                                {
+                                    <option value="@author">@author</option>
+                                }
+                            }
+                        </InputSelect>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col">
+                        <label class="form-label">Genre</label>
+                        <InputSelect @bind-Value="@Book.CustomGenre" class="form-select">
+                            @if (Book.Subjects is not null && Book.Subjects.Count() > 0)
+                            {
+                                foreach (var genre in Book.Subjects)
+                                {
+                                    <option value="@genre">@genre</option>
+                                }
+                            }
+                        </InputSelect>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col">
+                        <label class="form-label">Status</label>
+                        <InputSelect @bind-Value="@Book.Status" @bind-Value:after="CheckRating" class="form-select">
+                            <option value="ToRead">To Read</option>
+                            <option value="Reading">Reading</option>
+                            <option value="Finished">Finished</option>
+                        </InputSelect>
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Rating</label>
+                        <InputSelect @bind-Value="@Book.Rating" class="form-select" disabled="@(Book.Status.Equals(ReadingStatus.Finished) == false)">
+                            <option value="">------</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </InputSelect>
+                    </div>
+
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col">
+                        <label class="form-label">Personal Notes</label>
+                        <InputTextArea @bind-Value="@Book.PersonalNotes" class="form-control" rows="5"></InputTextArea>
+                    </div>
+
+                </div>
+
+                <div class="row justify-content-between align-items-center">
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-danger deleteBtn" @onclick="() => OnDeleteBook.InvokeAsync(Book.Id)">
+                            Delete
+                        </button>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn cancelBtn" @onclick="() => isEditing = false">Cancel</button>
+                        <button type="submit" class="btn btn-success saveChangesBtn">Save Changes</button>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-auto">
+                        @foreach (var error in Errors)
+                        {
+                            <span class="text-danger small">@error.ToString()</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </EditForm>
+}
+else
+{
+    <div class="row p-5 pt-4 gap-4">
 
         <div class="col-auto">
-            <img src="@Book.ImageUrl" alt="No Image Found" class="img-thumbnail rounded-4">
-        </div>
-
-        <div class="col">
-
             <div class="row mb-4">
-                <div class="col">
-                    <label class="form-label">Title</label>
-                    <InputText @bind-Value="@Book.Title" class="form-control" />
-                </div>
+                <img src="@Book.ImageUrl" alt="Book Image" class="rounded-4">
             </div>
-
-            <div class="row mb-4">
+            <div class="row">
                 <div class="col">
-                    <label class="form-label">Author</label>
-                    <InputSelect @bind-Value=@Book.CustomAuthor class="form-select">
-                    @if(Book.AuthorName is not null && Book.AuthorName.Count() > 0)
-                    {
-                        @foreach (var author in Book.AuthorName)
-                        {
-                            <option value="@author">@author</option>
-                        }
-                    }
-                    </InputSelect>
-                </div>
-            </div>
-
-            <div class="row mb-4">
-                <div class="col">
-                    <label class="form-label">Genre</label>
-                    <InputSelect @bind-Value="@Book.CustomGenre" class="form-select">
-                    @if (Book.Subjects is not null && Book.Subjects.Count() > 0)
-                    {
-                        foreach (var genre in Book.Subjects)
-                        {
-                            <option value="@genre">@genre</option>
-                        }
-                    }
-                    </InputSelect>
-                </div>
-            </div>
-
-            <div class="row mb-4">
-                <div class="col">
-                    <label class="form-label">Status</label>
-                    <InputSelect @bind-Value="@Book.Status" @bind-Value:after="CheckRating" class="form-select">
-                        <option value="ToRead">To Read</option>
-                        <option value="Reading">Reading</option>
-                        <option value="Finished">Finished</option>
-                    </InputSelect>
-                </div>
-                <div class="col">
-                    <label class="form-label">Rating</label>
-                    <InputSelect @bind-Value="@Book.Rating" class="form-select" disabled="@(Book.Status.Equals(ReadingStatus.Finished) == false)">
-                        <option value="">------</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                    </InputSelect>
-                </div>
-
-            </div>
-
-            <div class="row mb-4">
-                <div class="col">
-                    <label class="form-label">Personal Notes</label>
-                    <InputTextArea @bind-Value="@Book.PersonalNotes" class="form-control" rows="5"></InputTextArea>
-                </div>
-
-            </div>
-
-            <div class="row justify-content-between align-items-center">
-                <div class="col-auto">
-                    @foreach (var error in Errors)
-                    {
-                        <span class="text-danger small">@error.ToString()</span>
-                    }
-                </div>
-                <div class="col-auto">
-                    <button type="button" class="btn btn-danger" @onclick="() => OnDeleteBook.InvokeAsync(Book.Id)">
-                        Delete
+                    <button type="button" class="btn btn-success w-100 editDetailsBtn" @onclick="() => isEditing = true">
+                        Edit Details
                     </button>
-                    <button type="button" class="btn btn-success">Save Changes</button>
                 </div>
             </div>
         </div>
-    </div>
 
-</EditForm>
+        <div class="col pt-3">
+
+            <div class="row my-auto">
+                <div class="col">
+                    <span class="fs-4 fw-bold">
+                        @Book.Title
+                    </span>
+                </div>
+                <div class="col-auto my-auto">
+                    @if (Book.Status == ReadingStatus.ToRead)
+                    {
+                        <span class="badge rounded-pill to-read px-3 py-2">
+                            To Read
+                        </span>
+                    }
+                    else if (Book.Status == ReadingStatus.Reading)
+                    {
+                        <span class="badge rounded-pill reading px-3 py-2">
+                            Reading
+                        </span>
+                    }
+                    else if (Book.Status == ReadingStatus.Finished)
+                    {
+                        <span class="badge rounded-pill finished px-3 py-2">
+                            Finished
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col">
+                    <span class="fw-lighter">
+                        @Book.CustomAuthor
+                    </span>
+                </div>
+            </div>
+
+            <div class="row border-bottom pb-5">
+                @if (Book.Status == ReadingStatus.Finished)
+                {
+                    var userRating = Book.Rating;
+                    var remainingStars = 5 - userRating;
+                    <div class="col-auto pe-5 border-end">
+                        <p class="m-0 text-secondary fw-bold" style="font-size: 12px;">
+                            USER RATING
+                        </p>
+                        @for (int i = 0; i < userRating; i++)
+                        {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#f7d577" class="bi bi-star-fill"
+                                 viewBox="0 0 16 16">
+                                <path
+                                d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
+                            </svg>
+                        }
+
+                        @for (int i = 0; i < remainingStars; i++)
+                        {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#f7d577" class="bi bi-star"
+                                 viewBox="0 0 16 16">
+                                <path
+                                d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z" />
+                            </svg>
+                        }
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Book.CustomGenre))
+                {
+                    <div class="col-auto pe-5 border-end">
+                        <p class="m-0 text-secondary fw-bold" style="font-size: 12px;">
+                            GENRE
+                        </p>
+                        @Book.CustomGenre
+                    </div>
+                }
+                <div class="col-auto pe-5">
+                    <p class="m-0 text-secondary fw-bold" style="font-size: 12px;">
+                        Date Added
+                    </p>
+                    @Book.DateAdded.ToString("MMMM dd, yyyy")
+                </div>
+            </div>
+
+            <div class="row pt-5">
+                <div class="col">
+                    <p class="m-0 mb-2 fs-6">
+                        Personal Notes
+                    </p>
+                    <textarea class="form-control" readonly rows="7">
+                        @Book.PersonalNotes
+                    </textarea>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+}
+
+
+
 
 
 
@@ -119,6 +246,8 @@
 
     private List<ValidationResult> Errors { get; set; } = new();
 
+    private bool isEditing = false;
+
     private void CheckRating() => Book.Rating = Book.Status.Equals(ReadingStatus.Finished) == false ? null : Book.Rating;
 
     private async Task UpdateBook()
@@ -139,6 +268,7 @@
         if (updateIsValid) {
             await OnUpdateBook.InvokeAsync(UpdatedBook);
             Errors = new();
+            isEditing = false;            
         }
     }
 }

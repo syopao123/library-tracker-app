@@ -102,7 +102,8 @@ namespace LibraryTrackerApi.Services
                 Rating = bo.Rating,
                 PersonalNotes = bo.PersonalNotes,
                 Subjects = bo.Book.Subjects,
-                AuthorName = bo.Book.AuthorNames
+                AuthorName = bo.Book.AuthorNames,
+                DateAdded = bo.DateAdded
             }).ToListAsync();
 
             return userBooks;

@@ -1,0 +1,190 @@
+@page "/browse"
+@using LibraryShared.dtos
+@using LibraryTrackerApp.Services
+
+@inject BrowserService _browserService
+
+<PageTitle>Browse Books</PageTitle>
+
+<div class="container-fluid">
+    <div class="p-3 lg-5">
+
+        <div class="row mt-5 gap-4">
+
+            @* Navigation *@
+            <div class="col-auto">
+                <div class="row flex-column g-4">
+                    <div class="col-auto">
+                        <div class="card rounded-4 border-0 shadow-sm" style="width: 20rem;">
+                            <div class="card-body p-4">
+                                <p class="fs-5 fw-bold mb-1">Browse By</p>
+                                <ul class="list-unstyled list-group">
+                                    <li class="btn text-start">Most Popular</li>
+                                    <li class="btn text-start">Recently Added</li>
+                                    <li class="btn text-start">Highest Rated</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="card rounded-4 border-0 shadow-sm" style="width: 20rem;">
+                            <div class="card-body p-4">
+                                <p class="fs-5 fw-bold mb-1">Genres</p>
+                                <span
+                                class="badge rounded-pill text-bg-light fw-lighter px-3 py-2 border m-1">Fiction</span>
+                                <span
+                                class="badge rounded-pill text-bg-light fw-lighter px-3 py-2 border m-1">Non-Fiction</span>
+                                <span
+                                class="badge rounded-pill text-bg-light fw-lighter px-3 py-2 border m-1">Sci-Fi</span>
+                                <span
+                                class="badge rounded-pill text-bg-light fw-lighter px-3 py-2 border m-1">Fantasy</span>
+                                <span
+                                class="badge rounded-pill text-bg-light fw-lighter px-3 py-2 border m-1">Mystery</span>
+                                <span
+                                class="badge rounded-pill text-bg-light fw-lighter px-3 py-2 border m-1">Biography</span>
+                                <span class="badge rounded-pill text-bg-light fw-lighter px-3 py-2 border m-1">
+                                    View All
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="card rounded-4 border-0 shadow-sm" style="width: 20rem;">
+                            <div class="card-body p-4">
+                                <p class="fs-5 fw-bold mb-3">Community</p>
+
+                                @if (communityBooks is not null && communityBooks.Count() > 0)
+                                {
+                                    @foreach (var book in communityBooks)
+                                    {
+
+                                        <div class="row mb-3">
+                                            <div class="col-auto pe-0">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+                                                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
+                                                </svg>
+                                            </div>
+                                            <div class="col">
+                                                <p class="m-0"><span class="fw-bold">User</span><span> added</span></p>
+                                                <p class="m-0 text-secondary fst-italic small">@book.Title</p>
+                                            </div>
+                                        </div>
+
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* Main Content *@
+            <div class="col-9">
+
+                @* Book of the Week *@
+                <div class="row mb-5">
+                    <div class="card border-0 shadow-sm rounded-4" style="width: 90rem;">
+                        <div class="card-body p-5">
+                            <div class="row gap-5">
+
+                                <div class="col-auto">
+                                    <img src="https://i0.wp.com/kittymariebookreviews.home.blog/wp-content/uploads/2019/08/the-book-of-atrix-wolfe.jpg?ssl=1" alt="..." class="rounded-4">
+                                </div>
+
+                                <div class="col">
+
+                                    <div class="row mb-3">
+                                        <div class="col">
+                                            <span class="text-success">BOOK OF THE WEEK</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col">
+                                            <span class="fs-3 fw-bold">The Silent Patient</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col">
+                                            <span class="fw-lighter">Alex Michaelides</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col">
+                                            <p>
+                                                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Aut nesciunt
+                                                sunt qui voluptatibus dignissimos repellat quos, dolore ratione
+                                                repellendus repudiandae, aspernatur ipsum commodi accusantium omnis!
+                                                Dolorum eius quisquam quae modi.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <button class="btn btn-success">Wishlist</button>
+                                            <button class="btn btn-secondary">Details</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* Popular Right Now *@
+                <div class="row mb-3">
+                    <div class="col d-flex justify-content-between">
+                        <span class="fw-bold fs-5">Popular Right Now</span>
+                        <span class="text-success">View all</span>
+                    </div>
+                </div>
+
+                @* Popular Books *@
+                <div class="row mb-5 gap-3">
+
+                    <div class="col-auto p-0">
+                        <div class="card border-0 rounded-4 shadow-sm p-4" style="width: 20rem;">
+
+                            <img src="./images/book.jpg" alt="..." class="card-img mb-3">
+
+                            <div class="card-title">
+                                <span class="fs-5 fw-bold">Project Hail Mary</span>
+                            </div>
+
+                            <div class="card-body p-0">
+
+                                <p>Andy Weir</p>
+
+                                <p class="text-secondary">Added by 1.2k users</p>
+
+                            </div>
+
+                            <div class="card-footer bg-transparent border-0 p-0">
+
+                                <button class="btn btn-success w-100">Add to Library</button>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+    private List<CommunityBookDto>? communityBooks { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        communityBooks = await _browserService.GetCommunityBooksAsync() ?? new();
+    }
+
+}

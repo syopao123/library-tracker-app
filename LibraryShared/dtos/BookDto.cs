@@ -46,5 +46,8 @@ namespace LibraryShared.dtos
 
         [JsonPropertyName("subjects")]
         public List<string>? Subjects { get; set; }
+
+        [JsonPropertyName("dateAdded")]
+        public DateTime DateAdded { get; set; }
     }
 }

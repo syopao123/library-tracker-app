@@ -1,14 +1,10 @@
-using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 using LibraryShared.classes;
 using LibraryShared.dtos;
-using LibraryShared.enums;
-using LibraryTrackerApi.Data;
 using LibraryTrackerApi.Models;
 using LibraryTrackerApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace LibraryTrackerApi.Controllers
 {
@@ -19,63 +15,62 @@ namespace LibraryTrackerApi.Controllers
     {
         private readonly OpenLibraryService _openLibrary;
         private readonly BookManagerService _bookManager;
+        private readonly BrowserService _browserService;
 
         private string? UserEmail => User.FindFirstValue(ClaimTypes.Email);
 
-        public BooksController(OpenLibraryService openLibrary, BookManagerService bookManager)
+        public BooksController(OpenLibraryService openLibrary, BookManagerService bookManager, BrowserService browserService)
         {
             _openLibrary = openLibrary;
             _bookManager = bookManager;
+            _browserService = browserService;
         }
 
         // Get user books
         [HttpGet("library")]
         public async Task<ActionResult<List<BookDto>>> GetUserBooksAsync()
         {
-            if (string.IsNullOrEmpty(UserEmail)) return BadRequest();
+            if (string.IsNullOrEmpty(UserEmail)) return Unauthorized();
 
             var userBooks = await _bookManager.GetUserBooksAsync(UserEmail);
 
             if (userBooks is null) return NotFound();
 
-            return Ok(userBooks);
+            return userBooks;
         }
 
         // Get book by id
         [HttpGet("{id}")]
-        public async Task<ActionResult> GetBookAsync(Guid id)
+        public async Task<ActionResult<Book>> GetBookAsync(Guid id)
         {
-            if (string.IsNullOrEmpty(UserEmail))
-                return BadRequest();
+            if (string.IsNullOrEmpty(UserEmail)) return Unauthorized();
                 
-            var result = await _bookManager.GetBookAsync(id);
+            var book = await _bookManager.GetBookAsync(id);
 
-            if (result is null)
-                return NotFound();
+            if (book is null) return NotFound();
 
-            return Ok(result);
+            return book;
         }
         
         // Search book by title, author and publish year
         [HttpPost("search")]
         public async Task<ActionResult<OpenLibrarySearchResponse>> SearchBookAsync(BookSearchDto dto)
         {
-            if (string.IsNullOrEmpty(UserEmail))
-                return BadRequest();
+            if (string.IsNullOrEmpty(UserEmail)) return Unauthorized();
 
-            var books = await _openLibrary.SearchBookAsync(dto);
+            var searchedBooks = await _openLibrary.SearchBookAsync(dto);
 
-            if (books is null)
+            if (searchedBooks is null)
                 return NotFound();
 
-            return Ok(books);
+            return searchedBooks;
         }
         
         // Add book and bind to owner
         [HttpPost]
         public async Task<ActionResult<BookDto>> AddBookAsync(AddBookDto dto)
         {
-            if (string.IsNullOrEmpty(UserEmail)) return BadRequest();
+            if (string.IsNullOrEmpty(UserEmail)) return Unauthorized();
 
             var (result, message, book) = await _bookManager.AddBookAsync(UserEmail, dto);
 
@@ -87,9 +82,9 @@ namespace LibraryTrackerApi.Controllers
 
         // Update user's book details
         [HttpPatch]
-        public async Task<ActionResult> UpdateUserBookAsync(UpdateBookDto dto)
+        public async Task<IActionResult> UpdateUserBookAsync(UpdateBookDto dto)
         {
-            if (string.IsNullOrEmpty(UserEmail)) return BadRequest();
+            if (string.IsNullOrEmpty(UserEmail)) return Unauthorized();
 
             var (isSuccess, message) = await _bookManager.UpdateUserBookAsync(UserEmail, dto);
 
@@ -102,13 +97,24 @@ namespace LibraryTrackerApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> RemoveUserBookAsync(Guid id)
         {
-            if (string.IsNullOrEmpty(UserEmail)) return BadRequest();
+            if (string.IsNullOrEmpty(UserEmail)) return Unauthorized();
 
             var result = await _bookManager.RemoveBookFromUserAsync(UserEmail, id);
 
             if (result is null) return NotFound();
 
             return Ok();
+        }
+
+        // Gets latest books added by users
+        [HttpGet("community")]
+        public async Task<ActionResult<List<CommunityBookDto>>> GetCommunityBooksAsync()
+        {
+            if (string.IsNullOrEmpty(UserEmail)) return Unauthorized();
+
+            var communityBooks = await _browserService.GetCommunityBooksAsync();
+
+            return communityBooks;
         }
     }
 }

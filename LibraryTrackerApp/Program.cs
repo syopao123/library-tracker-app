@@ -20,10 +20,8 @@ builder.Services.AddScoped<AuthRefreshHandler>();
 // LibraryTrackerApi
 builder.Services.AddHttpClient("WebApi", httpClient =>
 {
-    httpClient.BaseAddress = new Uri("http://localhost:5068/api");
+    httpClient.BaseAddress = new Uri("http://localhost:5068/api/");
 }).AddHttpMessageHandler<AuthRefreshHandler>();
-
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
 // Authorization
 builder.Services.AddAuthorizationCore();
@@ -31,5 +29,6 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthService>());
 
 builder.Services.AddScoped<BookService>();
+builder.Services.AddScoped<BrowserService>();
 
 await builder.Build().RunAsync();

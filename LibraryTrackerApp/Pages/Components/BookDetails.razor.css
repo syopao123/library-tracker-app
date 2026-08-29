@@ -1,0 +1,32 @@
+    .to-read {
+        color: rgb(95, 62, 0) !important;
+        background-color: rgb(241, 220, 179) !important;
+    }
+
+    .reading {
+        color: rgb(16, 80, 58) !important;
+        background-color: rgb(179, 241, 209) !important;
+    }
+
+    .finished {
+        color: rgb(73, 73, 73) !important;
+        background-color: rgb(233, 233, 233) !important;
+    }
+
+    .editDetailsBtn,
+    .saveChangesBtn, .saveChangesBtn:hover {
+        background-color: #00857a;
+        border-radius: 10px;
+    }
+
+    .deleteBtn, .deleteBtn:hover {
+        background-color: #cf4f4f;
+        border-radius: 10px;
+    }
+
+    .cancelBtn {
+        background-color: transparent;
+        border-radius: 10px;
+        border: 1px solid green;
+        color: green;
+    }

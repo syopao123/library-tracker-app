@@ -29,7 +29,7 @@ namespace LibraryTrackerApp.Services
 
             var httpClient = _httpClientFactory.CreateClient("WebApi");
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
-            using var httpResponseMessage = await httpClient.PostAsJsonAsync(httpClient.BaseAddress + "/books/search", dto);
+            using var httpResponseMessage = await httpClient.PostAsJsonAsync("books/search", dto);
 
             if (httpResponseMessage.IsSuccessStatusCode)
             {
@@ -47,7 +47,7 @@ namespace LibraryTrackerApp.Services
 
             var httpClient = _httpClientFactory.CreateClient("WebApi");
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
-            var httpResponseMessage = await httpClient.GetAsync(httpClient.BaseAddress + "/books/library");
+            var httpResponseMessage = await httpClient.GetAsync("books/library");
 
             if (httpResponseMessage.IsSuccessStatusCode)
             {
@@ -67,7 +67,7 @@ namespace LibraryTrackerApp.Services
 
             var httpClient = _httpClientFactory.CreateClient("WebApi");
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
-            using var httpResponseMessage = await httpClient.PostAsJsonAsync(httpClient.BaseAddress + "/books", dto);
+            using var httpResponseMessage = await httpClient.PostAsJsonAsync("books", dto);
 
             if (httpResponseMessage.IsSuccessStatusCode)
             {
@@ -90,7 +90,7 @@ namespace LibraryTrackerApp.Services
             
             var httpClient = _httpClientFactory.CreateClient("WebApi");
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
-            using var httpResponseMessage = await httpClient.PatchAsJsonAsync(httpClient.BaseAddress + "/books", dto);
+            using var httpResponseMessage = await httpClient.PatchAsJsonAsync("books", dto);
 
             if (httpResponseMessage.IsSuccessStatusCode)
                 return (true, "You successfully updated your book.");
@@ -106,7 +106,7 @@ namespace LibraryTrackerApp.Services
 
             var httpClient = _httpClientFactory.CreateClient("WebApi");
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
-            using var httpResponseMessage = await httpClient.DeleteAsync(httpClient.BaseAddress + $"/books/{dto.Id}");
+            using var httpResponseMessage = await httpClient.DeleteAsync($"books/{dto.Id}");
 
             if (httpResponseMessage.IsSuccessStatusCode)
             {

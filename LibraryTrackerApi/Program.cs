@@ -37,6 +37,7 @@ builder.Services.AddHttpClient("BookSearchApi", httpClient =>
 
 builder.Services.AddSingleton<OpenLibraryService>();
 builder.Services.AddScoped<BookManagerService>();
+builder.Services.AddScoped<BrowserService>();
 
 builder.Services.Configure<IdentityOptions>(options => options.SignIn.RequireConfirmedEmail = false);
 
