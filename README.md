@@ -27,3 +27,7 @@ A personal library tracker web app built using Blazor.
 <figure>
     <img src="./screenshots/book_details.png" alt="Book Details" style="border: 1px solid black">
 </figure>
+
+<figure>
+    <img src="./screenshots/browse_books.png" alt="Browse Books" style="border: 1px solid black">
+</figure>
