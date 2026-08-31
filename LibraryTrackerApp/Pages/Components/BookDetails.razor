@@ -42,6 +42,7 @@
                         <InputSelect @bind-Value="@Book.CustomGenre" class="form-select">
                             @if (Book.Subjects is not null && Book.Subjects.Count() > 0)
                             {
+                                <option value="">------</option>
                                 foreach (var genre in Book.Subjects)
                                 {
                                     <option value="@genre">@genre</option>

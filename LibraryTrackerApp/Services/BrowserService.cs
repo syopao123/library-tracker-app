@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text.Json;
-using System.Threading.Tasks;
 using LibraryShared.dtos;
 using Microsoft.JSInterop;
 
@@ -32,6 +27,17 @@ namespace LibraryTrackerApp.Services
             var communityBooks = await httpClient.GetFromJsonAsync<List<CommunityBookDto>>("books/community");
 
             return communityBooks;
+        }
+
+        public async Task<List<PopularBookDto>?> GetPopularBooksAsync(int count)
+        {
+            if (string.IsNullOrEmpty(AccessToken)) return new();
+
+            var httpClient = _httpClientFactory.CreateClient("WebApi");
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            var popularBooks = await httpClient.GetFromJsonAsync<List<PopularBookDto>>($"books/popular-books/{count}");
+
+            return popularBooks;
         }
 
     }

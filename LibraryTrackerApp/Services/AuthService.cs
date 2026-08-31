@@ -33,7 +33,7 @@ namespace LibraryTrackerApp.Services
 
             if (string.IsNullOrEmpty(token) == false)
             {
-                var httpClient = _httpClientFactory.CreateClient("WebApi");
+                var httpClient = _httpClientFactory.CreateClient("IdentityApi");
                 var httpResponse = await httpClient.PostAsJsonAsync("refresh", new { refreshToken = token});
 
                 if (httpResponse.IsSuccessStatusCode)
@@ -55,17 +55,7 @@ namespace LibraryTrackerApp.Services
         // Checks if current user is logged in or not
         public override Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            string? accessToken;
-
-            try
-            {
-                accessToken = _localStorage.GetItem<string>("accessToken");
-            } catch
-            {
-                accessToken = null;
-            }
-
-            if (string.IsNullOrWhiteSpace(accessToken))
+            if (string.IsNullOrWhiteSpace(AccessToken))
             {
                 var anonymousUser = new ClaimsPrincipal(new ClaimsIdentity());
                 return Task.FromResult(new AuthenticationState(anonymousUser));
@@ -86,7 +76,7 @@ namespace LibraryTrackerApp.Services
         {
             try
             {
-                var httpClient = _httpClientFactory.CreateClient("WebApi");
+                var httpClient = _httpClientFactory.CreateClient("IdentityApi");
                 var loginResponse = await httpClient.PostAsJsonAsync("login", dto);
 
                 if (loginResponse.StatusCode == HttpStatusCode.Unauthorized)
@@ -120,7 +110,7 @@ namespace LibraryTrackerApp.Services
 
         public async Task<RegisterResponse?> RegisterUserAsync(RegisterDto dto)
         {
-            var httpClient = _httpClientFactory.CreateClient("WebApi");
+            var httpClient = _httpClientFactory.CreateClient("IdentityApi");
             var registerResponse = await httpClient.PostAsJsonAsync("register", dto);
             
             if (registerResponse.IsSuccessStatusCode == false)

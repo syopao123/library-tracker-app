@@ -1,0 +1,27 @@
+@using LibraryShared.dtos
+<div class="col-auto p-0">
+    <div class="card rounded-3 shadow-sm">
+
+        <img src="@Book.ImageUrl" alt="..." class="card-img-top">
+
+        <div class="card-title p-3 h-100">
+            <span class="fs-5 fw-bold">@Book.Title</span>
+        </div>
+
+        <div class="card-footer py-4">
+            <p class="text-secondary">Added by @Book.OwnerCount user@(Book.OwnerCount > 1 ? "s" : "")</p>
+            @if (!Book.IsOwnedByUser)
+            {
+                <button type="button" class="btn btn-success w-100" @onclick="() => OnAddToLibrary.InvokeAsync(Book)">Add to Library</button>
+            }
+        </div>
+
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public PopularBookDto Book { get; set; }
+    [Parameter, EditorRequired]
+    public EventCallback<PopularBookDto> OnAddToLibrary { get; set; }
+}

@@ -116,5 +116,15 @@ namespace LibraryTrackerApi.Controllers
 
             return communityBooks;
         }
+
+        [HttpGet("popular-books/{count}")]
+        public async Task<ActionResult<List<PopularBookDto>>> GetPopularBooksAsync(int count)
+        {
+            if (string.IsNullOrEmpty(UserEmail)) return Unauthorized();
+            
+            var popularBooks = await _browserService.GetPopularBooksAsync(count, UserEmail);
+
+            return popularBooks;
+        }
     }
 }

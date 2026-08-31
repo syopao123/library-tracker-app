@@ -41,5 +41,7 @@ namespace LibraryTrackerApi.Services
         {
             return await ApiSearchBook(dto.Title, dto.Author, dto.PublishYear);
         }
+
+        // TODO: Fetch from Works API to get book descriptions
     }
 }

@@ -23,6 +23,12 @@ builder.Services.AddHttpClient("WebApi", httpClient =>
     httpClient.BaseAddress = new Uri("http://localhost:5068/api/");
 }).AddHttpMessageHandler<AuthRefreshHandler>();
 
+// Identity API
+builder.Services.AddHttpClient("IdentityApi", httpClient =>
+{
+    httpClient.BaseAddress = new Uri("http://localhost:5068/");
+});
+
 // Authorization
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthService>();
