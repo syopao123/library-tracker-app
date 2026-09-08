@@ -16,8 +16,6 @@ A personal library tracker web app built using Blazor.
 - Book reading status & personal notes
 - Uses Open Library's <a href="https://openlibrary.org/dev/docs/api/search">Search</a> & <a href="https://openlibrary.org/dev/docs/api/covers">Covers</a> API
 
-> This project is actively under development. Some features are still being implemented.
-
 ## Screenshots
 
 <figure>
